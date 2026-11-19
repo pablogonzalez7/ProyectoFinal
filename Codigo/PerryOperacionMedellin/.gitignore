@@ -1,0 +1,7 @@
+
+# Compilacion y configuracion local de Qt Creator
+/build/
+/build-nuevo/
+/.qtcreator/
+*.user
+*.user.*
