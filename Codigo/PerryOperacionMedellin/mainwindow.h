@@ -8,6 +8,7 @@ class Nivel;
 class QGraphicsView;
 class QTimer;
 class Jugador;
+class QLabel;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,6 +29,7 @@ protected:
 
 private slots:
     void actualizarJuego();
+    void limpiarTeclado();
 
 private:
     enum TeclaMovimiento : quint8 {
@@ -47,6 +49,7 @@ private:
 
     QTimer *temporizador;
     QElapsedTimer tiempo;
+    QLabel *indicador;
 
     quint8 teclas = 0;
 };

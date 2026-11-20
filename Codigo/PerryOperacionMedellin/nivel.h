@@ -1,23 +1,83 @@
 #ifndef NIVEL_H
 #define NIVEL_H
 
+#include "configuracion.h"
 #include <QGraphicsScene>
 #include <QList>
 #include <QPointF>
 #include <QRectF>
+#include <QString>
+#include <array>
+
+class Jugador;
+class Llave;
+class Villano;
+class QGraphicsRectItem;
+class QGraphicsSimpleTextItem;
 
 class Nivel : public QGraphicsScene
 {
+    Q_OBJECT
 public:
+    enum Estado { EnJuego, Reiniciando, Completado };
     explicit Nivel(QObject *padre = nullptr);
 
-    QPointF limitarDesplazamiento(
-        const QRectF &cuerpo,
-        const QPointF &desplazamiento
-        ) const;
+    void actualizar(qreal segundosReales);
+    void reiniciarCasa();
+    Jugador *obtenerJugador() const;
+    const QList<Villano *> &obtenerGuardias() const;
+    Estado obtenerEstado() const;
+    bool alarmaActivada() const;
+    qreal segundosRestantes() const;
+    int cantidadLlavesRecogidas() const;
+    QString informacionActual() const;
+
+    QPointF limitarDesplazamiento(const QRectF &cuerpo,
+                                 const QPointF &desplazamiento) const;
+    bool hayLineaDeVision(const QPointF &origen, const QPointF &destino) const;
+    QPointF recortarRayo(const QPointF &origen, const QPointF &destino) const;
+    bool caminoLibre(const QPointF &origen, const QPointF &destino) const;
+    void calcularRuta(const QPointF &origen, const QPointF &destino,
+                      QList<QPointF> &resultado) const;
+
+signals:
+    void informacionCambiada(const QString &texto);
+    void controlesLiberados();
+    void casaSuperada();
+
+private slots:
+    void marcarInformacion();
 
 private:
+    struct Nodo {
+        QPointF centro;
+        bool libre = false;
+        std::array<int, 4> vecinos{{-1, -1, -1, -1}};
+    };
+
+    void prepararNavegacion();
+    int nodoMasCercano(const QPointF &punto) const;
+    void actualizarObjetivos();
+    void actualizarIndicador();
+    void iniciarAlarma();
+    void perder(const QString &motivo);
+
     const QList<QRectF> paredes;
+    std::array<Nodo, ConfiguracionCasa::totalCeldas> navegacion;
+    std::array<Llave *, 2> llaves{};
+    QList<Villano *> guardias;
+    Jugador *jugador = nullptr;
+    QGraphicsRectItem *puerta = nullptr;
+    QGraphicsRectItem *panelAviso = nullptr;
+    QGraphicsSimpleTextItem *aviso = nullptr;
+    Estado estado = EnJuego;
+    bool alarma = false;
+    int llavesRecogidas = 0;
+    qreal tiempoRestante = ConfiguracionCasa::duracionAlarma;
+    qreal esperaReinicio = 0.0;
+    int ultimoSegundo = -1;
+    bool informacionPendiente = true;
+    QString informacion;
 };
 
 #endif // NIVEL_H

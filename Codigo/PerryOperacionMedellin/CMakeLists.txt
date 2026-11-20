@@ -14,6 +14,9 @@ qt_add_executable(PerryOperacionMedellin
     personaje.h personaje.cpp
     jugador.h jugador.cpp
     nivel.h nivel.cpp
+    llave.h llave.cpp
+    villano.h villano.cpp
+    configuracion.h
 )
 
 target_link_libraries(PerryOperacionMedellin
@@ -42,3 +45,27 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
     FILES
         imagenes/perry.png
 )
+
+# Opcional: pruebas de mecanicas, rutas, reinicios y teclado.
+option(CONSTRUIR_PRUEBAS "Compilar las pruebas de la casa" OFF)
+if(CONSTRUIR_PRUEBAS)
+    enable_testing()
+    qt_add_executable(pruebas_casa
+        pruebas/prueba_casa.cpp
+        mainwindow.h mainwindow.cpp mainwindow.ui
+        personaje.h personaje.cpp
+        jugador.h jugador.cpp
+        villano.h villano.cpp
+        nivel.h nivel.cpp
+        llave.h llave.cpp
+        configuracion.h
+    )
+    target_include_directories(pruebas_casa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(pruebas_casa PRIVATE Qt::Core Qt::Widgets)
+    qt_add_resources(pruebas_casa "imagenes_pruebas"
+        PREFIX "/"
+        FILES imagenes/perry.png
+    )
+    add_test(NAME casa COMMAND pruebas_casa ${CMAKE_CURRENT_BINARY_DIR}/capturas)
+    set_tests_properties(casa PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+endif()

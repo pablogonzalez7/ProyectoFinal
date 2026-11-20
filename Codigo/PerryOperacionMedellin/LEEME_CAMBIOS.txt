@@ -1,0 +1,80 @@
+PERRY: OPERACION MEDELLIN - BLOQUE DE LA CASA, VIERNES 20
+
+INSTALACION EN EL PROYECTO EXISTENTE
+1. Guardar y cerrar Qt Creator y la ventana del juego.
+2. Extraer el ZIP.
+3. Copiar su contenido (archivos y carpetas, no la carpeta contenedora) a:
+   C:\Users\Usuario\Proyectos\ProyectoFinal\Codigo\PerryOperacionMedellin
+4. Aceptar reemplazar los archivos existentes.
+5. Abrir el CMakeLists.txt de esa carpeta en Qt Creator.
+6. Usar el kit Desktop Qt 6.12.0 MinGW 64-bit / Debug y ejecutar.
+
+CONTROLES
+WASD: movimiento en ocho direcciones, con rapidez diagonal normalizada.
+C: poner/quitar el sombrero. Sin sombrero se ve el ornitorrinco de cuatro patas.
+R: reiniciar la casa, incluidas llaves, guardias, alarma y camuflaje.
+Al cambiar de ventana, el juego se pausa y limpia las teclas presionadas.
+
+MECANICAS
+- Tres guardias recorren rutas fijas.
+- Los conos muestran la zona de reconocimiento; las paredes bloquean la vision.
+- Un guardia que ve a Perry lo persigue. Si lo pierde de vista, investiga la
+  ultima posicion observada y luego retoma su patrulla.
+- El camuflaje reduce rapidez y alcance de reconocimiento. No borra una
+  persecucion existente. El contacto con un guardia siempre causa captura.
+- Las llaves dorada y azul se recogen al tocarlas, una sola vez por partida.
+- La segunda llave activa una alarma de 30 segundos, acelera a los guardias
+  y habilita la salida verde.
+- Captura o tiempo agotado: mensaje de 1.5 segundos y reinicio automatico.
+- Llegar a la salida con ambas llaves termina la prueba de la casa.
+
+AJUSTES
+configuracion.h centraliza velocidades, alcance de vision, duracion de la
+alarma, intervalo de percepcion y demora del reinicio.
+La hoja de Perry y el dibujo de los guardias siguen siendo provisionales.
+
+ORGANIZACION
+Personaje: base abstracta compartida por Jugador y Villano.
+Jugador: movimiento, sombrero, sprites y animacion.
+Villano: patrulla, reconocimiento, persecucion y busqueda mediante reglas fijas.
+Nivel: paredes, navegacion compartida, llaves, alarma y estados de la casa.
+MainWindow: teclado, ventana y unico QTimer del juego.
+Llave: tipo, dibujo y estado de recoleccion.
+
+EFICIENCIA Y MEMORIA
+- Sprites recortados y ajustados una vez; no se cargan archivos al caminar.
+- Jugador, guardias, llaves y sus dibujos se reutilizan al reiniciar.
+- QGraphicsScene es propietaria de los items agregados. El cono es hijo de
+  su guardia; Qt lo destruye con el guardia. Los punteros al jugador/nivel
+  que usan los personajes son referencias, no propietarios adicionales.
+- Una rejilla estatica de navegacion se calcula al construir el nivel.
+- Todos los guardias comparten esa rejilla. BFS usa cola y predecesores de
+  tamano fijo; se busca ruta al cambiar de destino, no en cada paso fisico.
+- La vision descarta por distancia al cuadrado y direccion antes de revisar
+  paredes. La percepcion tiene un intervalo configurable de 0.1 segundos.
+- Los conos se regeneran al moverse lo suficiente o cambiar direccion/estado.
+- El texto del indicador cambia por eventos y por segundos enteros del reloj.
+- La alarma consume tiempo real transcurrido; la fisica usa pasos limitados.
+
+SENALES Y SLOTS
+QTimer::timeout -> MainWindow::actualizarJuego.
+Jugador::camuflajeCambiado -> Nivel::marcarInformacion.
+Villano::estadoCambiado -> Nivel::marcarInformacion.
+Nivel::informacionCambiada -> QLabel::setText.
+Nivel::controlesLiberados -> MainWindow::limpiarTeclado.
+
+PRUEBAS
+Se compilo con Qt 6.8.2 en Linux y se ejecutaron diez pruebas automaticas:
+camuflaje, cono/paredes, persecucion, rutas, patrulla entre habitaciones,
+aceleracion por alarma, llaves/reloj, captura/reinicio/reutilizacion,
+salida condicionada y teclado/pausa. Tambien se completo una partida
+simulada mediante movimiento continuo, sin teletransportar al jugador.
+La comprobacion del kit de Windows corresponde al PC de Cristian.
+
+Para compilar las pruebas desde un entorno CMake con Qt configurado:
+  cmake -S . -B build-pruebas -DCONSTRUIR_PRUEBAS=ON
+  cmake --build build-pruebas --target pruebas_casa
+  ctest --test-dir build-pruebas --output-on-failure
+
+El ZIP contiene codigo fuente y recursos. No incluye compilaciones,
+configuracion local de Qt Creator ni una carpeta .git.
