@@ -6,6 +6,8 @@
 #include <QPointF>
 #include <array>
 
+using namespace std;
+
 class Nivel;
 class Jugador;
 class QGraphicsPathItem;
@@ -27,6 +29,9 @@ public:
     Estado obtenerEstado() const;
     bool puedeVerJugador() const;
     qreal radioDeteccion() const;
+
+private slots:
+    void responderCamuflaje(bool activo);
 
 signals:
     void estadoCambiado();
@@ -51,10 +56,11 @@ private:
     QPointF ultimaPosicionConocida;
     qreal esperaPercepcion = 0.0;
     qreal esperaBusqueda = 0.0;
+    qreal esperaPatrulla = 0.0;
 
     QGraphicsPathItem *cono;
     static constexpr int cantidadRayos = 19;
-    std::array<QPointF, cantidadRayos> direccionesRayos;
+    array<QPointF, cantidadRayos> direccionesRayos;
     QPointF ultimaPosicionCono;
     QPointF ultimaDireccionCono;
     qreal ultimoRadioCono = -1.0;

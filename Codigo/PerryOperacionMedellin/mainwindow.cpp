@@ -14,6 +14,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+using namespace std;
+
 MainWindow::MainWindow(QWidget *padre)
     : QMainWindow(padre), interfaz(new Ui::MainWindow)
     , escena(new Nivel(this)), vista(new QGraphicsView(this))
@@ -29,14 +31,15 @@ MainWindow::MainWindow(QWidget *padre)
     vista->setFrameShape(QFrame::NoFrame);
     vista->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     vista->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    vista->setFixedSize(ConfiguracionCasa::ancho, ConfiguracionCasa::alto);
+    vista->setFixedSize(ConfiguracionCasa::anchoVista, ConfiguracionCasa::altoVista);
+    vista->centerOn(jugador);
 
     // El indicador queda fuera del mapa y no tapa paredes ni personajes.
     indicador->setFixedHeight(56);
     indicador->setFont(QFont("Arial", 10));
     indicador->setStyleSheet("background:#17222b; color:#eef3f7; padding:6px;");
     indicador->setText(escena->informacionActual());
-    auto *controles = new QLabel("WASD: mover    |    C: sombrero / camuflaje    |    R: reiniciar", this);
+    auto *controles = new QLabel("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar", this);
     controles->setFixedHeight(28);
     controles->setStyleSheet("background:#17222b; color:#eef3f7; padding-left:8px;");
 
@@ -48,7 +51,7 @@ MainWindow::MainWindow(QWidget *padre)
     distribucion->addWidget(vista);
     distribucion->addWidget(controles);
     setCentralWidget(contenedor);
-    setFixedSize(ConfiguracionCasa::ancho, ConfiguracionCasa::alto + 84);
+    setFixedSize(ConfiguracionCasa::anchoVista, ConfiguracionCasa::altoVista + 84);
 
     connect(escena, &Nivel::informacionCambiada, indicador, &QLabel::setText);
     connect(escena, &Nivel::controlesLiberados, this, &MainWindow::limpiarTeclado);
@@ -59,6 +62,7 @@ MainWindow::MainWindow(QWidget *padre)
     vista->setFocusPolicy(Qt::StrongFocus);
     vista->installEventFilter(this);
     vista->setFocus();
+    vista->centerOn(jugador);
     tiempo.start();
     temporizador->start();
 }
@@ -141,4 +145,5 @@ void MainWindow::actualizarJuego()
 {
     const qreal segundosReales = tiempo.restart() / 1000.0;
     escena->actualizar(segundosReales);
+    vista->centerOn(jugador);
 }

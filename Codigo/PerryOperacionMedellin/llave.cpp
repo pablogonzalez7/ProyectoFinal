@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QPen>
 
+using namespace std;
+
 Llave::Llave(Tipo tipoLlave, QGraphicsItem *padre)
     : QGraphicsItem(padre), tipo(tipoLlave)
 {

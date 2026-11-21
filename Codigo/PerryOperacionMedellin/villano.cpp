@@ -12,6 +12,8 @@
 #include <QtMath>
 #include <stdexcept>
 
+using namespace std;
+
 namespace {
 qreal longitudCuadrada(const QPointF &p)
 {
@@ -26,7 +28,7 @@ Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
     , cono(new QGraphicsPathItem(this))
 {
     if (!nivel || !jugador || patrulla.size() < 2) {
-        throw std::invalid_argument("Un guardia necesita nivel, jugador y al menos dos puntos de patrulla.");
+        throw invalid_argument("Un guardia necesita nivel, jugador y al menos dos puntos de patrulla.");
     }
     camino.reserve(ConfiguracionCasa::totalCeldas + 2);
     setAcceptedMouseButtons(Qt::NoButton);
@@ -38,6 +40,7 @@ Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
             + 2.0 * ConfiguracionCasa::semianguloVision * i / (cantidadRayos - 1));
         direccionesRayos[i] = QPointF(qCos(angulo), qSin(angulo));
     }
+    connect(jugador, &Jugador::camuflajeCambiado, this, &Villano::responderCamuflaje);
     restablecer();
 }
 
@@ -46,9 +49,21 @@ Villano::Estado Villano::obtenerEstado() const { return estado; }
 
 qreal Villano::radioDeteccion() const
 {
-    // Si ya fue identificado, quitarse el sombrero no borra la persecucion.
-    return jugador->estaCamuflado() && estado == Patrullando
-        ? ConfiguracionCasa::radioCamuflado : ConfiguracionCasa::radioVision;
+    // La linterna conserva su alcance; el disfraz impide reconocer a Perry.
+    return ConfiguracionCasa::radioVision;
+}
+
+void Villano::responderCamuflaje(bool activo)
+{
+    esperaPercepcion = 0.0;
+    if (activo && estado != Patrullando) {
+        cambiarEstado(Patrullando);
+        esperaBusqueda = 0.0;
+        esperaPatrulla = 0.0;
+        ultimaPosicionConocida = centro();
+        irHacia(patrulla.at(indicePatrulla));
+        actualizarCono(true);
+    }
 }
 
 void Villano::cambiarEstado(Estado nuevoEstado)
@@ -73,6 +88,7 @@ void Villano::restablecer()
     ultimaPosicionConocida = centro();
     esperaPercepcion = 0.0;
     esperaBusqueda = 0.0;
+    esperaPatrulla = 0.0;
     irHacia(patrulla.at(indicePatrulla));
     actualizarCono(true);
 }
@@ -85,6 +101,9 @@ void Villano::establecerAlarma(bool activa)
 
 bool Villano::puedeVerJugador() const
 {
+    if (jugador->estaCamuflado()) {
+        return false;
+    }
     const QPointF origen = centro();
     const QPointF objetivo = jugador->sceneBoundingRect().center();
     const QPointF diferencia = objetivo - origen;
@@ -117,6 +136,7 @@ void Villano::comprobarJugador()
         const bool cambioDestino = longitudCuadrada(observado - ultimaPosicionConocida) >= 16.0;
         ultimaPosicionConocida = observado;
         cambiarEstado(Persiguiendo);
+        esperaPatrulla = 0.0;
         esperaBusqueda = 0.0;
         if (nuevaPersecucion || cambioDestino || pasoRuta >= camino.size()) {
             irHacia(ultimaPosicionConocida);
@@ -170,9 +190,16 @@ void Villano::actualizar(qreal segundosTranscurridos)
     if (alarma) {
         velocidad *= ConfiguracionCasa::factorAlarma;
     }
+    // La percepcion sigue activa durante las pausas; no son periodos de ceguera.
+    if (estado == Patrullando && esperaPatrulla > 0.0) {
+        esperaPatrulla -= segundosTranscurridos;
+        actualizarCono();
+        return;
+    }
     seguirRuta(segundosTranscurridos);
     if (pasoRuta >= camino.size()) {
         if (estado == Patrullando) {
+            esperaPatrulla = ConfiguracionCasa::pausaPatrulla;
             indicePatrulla = (indicePatrulla + 1) % patrulla.size();
             irHacia(patrulla.at(indicePatrulla));
         } else if (estado == Investigando) {

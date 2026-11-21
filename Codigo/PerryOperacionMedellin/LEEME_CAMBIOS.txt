@@ -1,80 +1,58 @@
-PERRY: OPERACION MEDELLIN - BLOQUE DE LA CASA, VIERNES 20
+PERRY: OPERACION MEDELLIN - CASA AMPLIADA
 
 INSTALACION EN EL PROYECTO EXISTENTE
-1. Guardar y cerrar Qt Creator y la ventana del juego.
-2. Extraer el ZIP.
-3. Copiar su contenido (archivos y carpetas, no la carpeta contenedora) a:
-   C:\Users\Usuario\Proyectos\ProyectoFinal\Codigo\PerryOperacionMedellin
-4. Aceptar reemplazar los archivos existentes.
-5. Abrir el CMakeLists.txt de esa carpeta en Qt Creator.
-6. Usar el kit Desktop Qt 6.12.0 MinGW 64-bit / Debug y ejecutar.
+1. Guarda tus cambios y deten el juego en Qt Creator.
+2. Extrae el ZIP en una carpeta temporal.
+3. Copia el contenido de la carpeta PerryOperacionMedellin sobre tu carpeta
+   Codigo/PerryOperacionMedellin. Reemplaza los archivos de igual nombre.
+   No pongas otra carpeta PerryOperacionMedellin dentro de la existente.
+4. Abre el CMakeLists.txt de tu proyecto y acepta recargar CMake si se solicita.
+5. Compila y ejecuta con Ctrl+R. No hace falta crear clases con el asistente.
 
-CONTROLES
-WASD: movimiento en ocho direcciones, con rapidez diagonal normalizada.
-C: poner/quitar el sombrero. Sin sombrero se ve el ornitorrinco de cuatro patas.
-R: reiniciar la casa, incluidas llaves, guardias, alarma y camuflaje.
-Al cambiar de ventana, el juego se pausa y limpia las teclas presionadas.
+CONTROLES Y REGLAS
+- WASD: caminar. La diagonal tiene la misma rapidez que los otros movimientos.
+- C: activa el camuflaje durante 4 segundos. Otro toque lo cancela antes.
+  Al terminar vuelve automaticamente al modo agente y recupera su rapidez.
+  El tiempo restante aparece en el indicador superior.
+- Camuflado: los guardias no reconocen a Perry, dejan de perseguirlo y no
+  lo capturan al tocarlo. Conservan sus linternas y sus patrullas.
+- Con sombrero: pueden reconocerlo dentro del cono y capturarlo por contacto.
+- Cada llave requiere permanecer quieto y con sombrero sobre ella 1,2 segundos.
+  Camuflarse, moverse o salir de la llave interrumpe el progreso.
+- Llave dorada: bodega, abajo a la izquierda. Azul: oficina, arriba a la derecha.
+- La segunda llave activa 30 segundos de alarma y acelera las patrullas.
+- Salida: garaje, abajo a la derecha; exige ambas llaves.
+- R: reinicia la casa, reutilizando los objetos.
+- Cambiar a otra ventana pausa el juego y limpia las teclas pulsadas.
 
-MECANICAS
-- Tres guardias recorren rutas fijas.
-- Los conos muestran la zona de reconocimiento; las paredes bloquean la vision.
-- Un guardia que ve a Perry lo persigue. Si lo pierde de vista, investiga la
-  ultima posicion observada y luego retoma su patrulla.
-- El camuflaje reduce rapidez y alcance de reconocimiento. No borra una
-  persecucion existente. El contacto con un guardia siempre causa captura.
-- Las llaves dorada y azul se recogen al tocarlas, una sola vez por partida.
-- La segunda llave activa una alarma de 30 segundos, acelera a los guardias
-  y habilita la salida verde.
-- Captura o tiempo agotado: mensaje de 1.5 segundos y reinicio automatico.
-- Llegar a la salida con ambas llaves termina la prueba de la casa.
+CAMBIOS
+Seis habitaciones en un mapa de 1440 x 800, con camara de 960 x 540.
+Muebles opacos, puertas desplazadas y cuatro patrullas. Los guardias hacen
+pausas de 1,1 segundos en los extremos de su ruta, manteniendo la vision activa.
+El camuflaje cancela la persecucion mediante una senal/slot, sin esperar al
+siguiente ciclo de percepcion. No hay aprendizaje en estos guardias.
+Todos los archivos .h y .cpp usan using namespace std; tras sus includes.
+Los contenedores Qt conservan sus nombres. La escena conserva la propiedad
+de los objetos. Cambiar la escritura de std:: no cambia el rendimiento.
 
-AJUSTES
-configuracion.h centraliza velocidades, alcance de vision, duracion de la
-alarma, intervalo de percepcion y demora del reinicio.
-La hoja de Perry y el dibujo de los guardias siguen siendo provisionales.
+EFICIENCIA
+- Sprites recortados y escalados una vez, reutilizados al pintar.
+- Un temporizador para toda la simulacion.
+- Rejilla de navegacion compartida, preparada una vez al construir el nivel.
+- BFS para rutas con conexiones de igual costo; array fijo para cola y anteriores.
+- Percepcion cada 0,1 segundos; primero alcance y angulo, despues paredes.
+- Indicador actualizado por cambios, segundos o progreso en incrementos de 10%.
+- Reinicios sin crear nuevamente jugador, llaves ni guardias.
 
-ORGANIZACION
-Personaje: base abstracta compartida por Jugador y Villano.
-Jugador: movimiento, sombrero, sprites y animacion.
-Villano: patrulla, reconocimiento, persecucion y busqueda mediante reglas fijas.
-Nivel: paredes, navegacion compartida, llaves, alarma y estados de la casa.
-MainWindow: teclado, ventana y unico QTimer del juego.
-Llave: tipo, dibujo y estado de recoleccion.
+VALIDACION
+El directorio pruebas incluye comprobaciones de mecanicas, colisiones, rutas,
+patrullas, camuflaje de cuatro segundos, llaves, alarma, reinicios, teclado,
+camara y recorrido completo. Se activa con CONSTRUIR_PRUEBAS=ON en CMake.
+Los tests que aislan objetivos apartan guardias; la prueba de partida completa
+mantiene los cuatro guardias activos y desplaza al jugador sin teletransportarlo.
+El piloto conoce el mapa y los guardias: su tiempo no estima el de un jugador nuevo.
 
-EFICIENCIA Y MEMORIA
-- Sprites recortados y ajustados una vez; no se cargan archivos al caminar.
-- Jugador, guardias, llaves y sus dibujos se reutilizan al reiniciar.
-- QGraphicsScene es propietaria de los items agregados. El cono es hijo de
-  su guardia; Qt lo destruye con el guardia. Los punteros al jugador/nivel
-  que usan los personajes son referencias, no propietarios adicionales.
-- Una rejilla estatica de navegacion se calcula al construir el nivel.
-- Todos los guardias comparten esa rejilla. BFS usa cola y predecesores de
-  tamano fijo; se busca ruta al cambiar de destino, no en cada paso fisico.
-- La vision descarta por distancia al cuadrado y direccion antes de revisar
-  paredes. La percepcion tiene un intervalo configurable de 0.1 segundos.
-- Los conos se regeneran al moverse lo suficiente o cambiar direccion/estado.
-- El texto del indicador cambia por eventos y por segundos enteros del reloj.
-- La alarma consume tiempo real transcurrido; la fisica usa pasos limitados.
-
-SENALES Y SLOTS
-QTimer::timeout -> MainWindow::actualizarJuego.
-Jugador::camuflajeCambiado -> Nivel::marcarInformacion.
-Villano::estadoCambiado -> Nivel::marcarInformacion.
-Nivel::informacionCambiada -> QLabel::setText.
-Nivel::controlesLiberados -> MainWindow::limpiarTeclado.
-
-PRUEBAS
-Se compilo con Qt 6.8.2 en Linux y se ejecutaron diez pruebas automaticas:
-camuflaje, cono/paredes, persecucion, rutas, patrulla entre habitaciones,
-aceleracion por alarma, llaves/reloj, captura/reinicio/reutilizacion,
-salida condicionada y teclado/pausa. Tambien se completo una partida
-simulada mediante movimiento continuo, sin teletransportar al jugador.
-La comprobacion del kit de Windows corresponde al PC de Cristian.
-
-Para compilar las pruebas desde un entorno CMake con Qt configurado:
-  cmake -S . -B build-pruebas -DCONSTRUIR_PRUEBAS=ON
-  cmake --build build-pruebas --target pruebas_casa
-  ctest --test-dir build-pruebas --output-on-failure
-
-El ZIP contiene codigo fuente y recursos. No incluye compilaciones,
-configuracion local de Qt Creator ni una carpeta .git.
+ALCANCE
+Esta entrega actualiza la casa. Carretera, fisicas del automovil, segundo nivel,
+sonidos y combate de Popeye siguen pendientes. El arte sigue siendo provisional.
+Este archivo explica el codigo y no sustituye el informe academico del estudiante.

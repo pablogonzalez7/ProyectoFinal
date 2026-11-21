@@ -6,6 +6,8 @@
 #include <QPixmap>
 #include <QPointF>
 
+using namespace std;
+
 class Nivel;
 
 class Jugador : public Personaje
@@ -19,6 +21,8 @@ public:
     void actualizar(qreal segundosTranscurridos) override;
 
     void alternarCamuflaje();
+    void actualizarCamuflaje(qreal segundosReales);
+    qreal segundosCamuflaje() const;
     void restablecer();
     bool estaCamuflado() const;
     qreal rapidezActual() const;
@@ -53,6 +57,7 @@ private:
     QPixmap fotogramas[cantidadDirecciones][cantidadFotogramas];
     QPixmap aparienciasCamufladas[cantidadDirecciones];
     bool camuflado = false;
+    qreal tiempoCamuflaje = 0.0;
     Orientacion orientacion = Abajo;
     int fotogramaActual = 0;
     qreal tiempoAnimacion = 0.0;

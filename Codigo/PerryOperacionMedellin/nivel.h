@@ -9,6 +9,8 @@
 #include <QString>
 #include <array>
 
+using namespace std;
+
 class Jugador;
 class Llave;
 class Villano;
@@ -52,19 +54,20 @@ private:
     struct Nodo {
         QPointF centro;
         bool libre = false;
-        std::array<int, 4> vecinos{{-1, -1, -1, -1}};
+        array<int, 4> vecinos{{-1, -1, -1, -1}};
     };
 
     void prepararNavegacion();
     int nodoMasCercano(const QPointF &punto) const;
-    void actualizarObjetivos();
+    void actualizarObjetivos(qreal segundos, bool seMovio);
+    void mostrarAviso();
     void actualizarIndicador();
     void iniciarAlarma();
     void perder(const QString &motivo);
 
     const QList<QRectF> paredes;
-    std::array<Nodo, ConfiguracionCasa::totalCeldas> navegacion;
-    std::array<Llave *, 2> llaves{};
+    array<Nodo, ConfiguracionCasa::totalCeldas> navegacion;
+    array<Llave *, 2> llaves{};
     QList<Villano *> guardias;
     Jugador *jugador = nullptr;
     QGraphicsRectItem *puerta = nullptr;
@@ -73,6 +76,9 @@ private:
     Estado estado = EnJuego;
     bool alarma = false;
     int llavesRecogidas = 0;
+    int llaveEnProceso = -1;
+    qreal tiempoRecogida = 0.0;
+    int ultimoProgreso = -1;
     qreal tiempoRestante = ConfiguracionCasa::duracionAlarma;
     qreal esperaReinicio = 0.0;
     int ultimoSegundo = -1;

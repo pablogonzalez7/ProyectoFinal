@@ -3,6 +3,8 @@
 
 #include <QGraphicsObject>
 
+using namespace std;
+
 class Personaje : public QGraphicsObject
 {
     Q_OBJECT

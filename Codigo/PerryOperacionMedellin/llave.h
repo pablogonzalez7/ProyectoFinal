@@ -3,6 +3,8 @@
 
 #include <QGraphicsItem>
 
+using namespace std;
+
 class Llave : public QGraphicsItem
 {
 public:

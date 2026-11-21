@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QElapsedTimer>
 
+using namespace std;
+
 class Nivel;
 class QGraphicsView;
 class QTimer;

@@ -3,6 +3,8 @@
 #include <QPainter>
 #include <QColor>
 
+using namespace std;
+
 Personaje::Personaje(qreal velocidadInicial, QGraphicsItem *padre)
     : QGraphicsObject(padre)
     , velocidad(velocidadInicial)

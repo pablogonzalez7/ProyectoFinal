@@ -8,6 +8,9 @@
 #include <QSize>
 #include <QtMath>
 #include <stdexcept>
+#include <cmath>
+
+using namespace std;
 
 Jugador::Jugador(const Nivel *nivelActual)
     : Personaje(ConfiguracionCasa::rapidezJugador)
@@ -22,12 +25,12 @@ void Jugador::cargarSprites()
     const QPixmap hoja(":/imagenes/perry.png");
 
     if (hoja.isNull()) {
-        throw std::runtime_error("No se pudo cargar el recurso :/imagenes/perry.png.");
+        throw runtime_error("No se pudo cargar el recurso :/imagenes/perry.png.");
     }
 
     // Estos recortes corresponden a la hoja provisional del repositorio.
     if (hoja.size() != QSize(1448, 1086)) {
-        throw std::runtime_error("La hoja imagenes/perry.png debe medir 1448 x 1086 pixeles.");
+        throw runtime_error("La hoja imagenes/perry.png debe medir 1448 x 1086 pixeles.");
     }
 
     // Filas: abajo, arriba, izquierda y derecha.
@@ -74,6 +77,7 @@ void Jugador::cargarSprites()
 void Jugador::alternarCamuflaje()
 {
     camuflado = !camuflado;
+    tiempoCamuflaje = camuflado ? ConfiguracionCasa::duracionCamuflaje : 0.0;
     velocidad = camuflado ? ConfiguracionCasa::rapidezCamuflado
                          : ConfiguracionCasa::rapidezJugador;
     fotogramaActual = 0;
@@ -81,6 +85,19 @@ void Jugador::alternarCamuflaje()
     update();
     emit camuflajeCambiado(camuflado);
 }
+
+void Jugador::actualizarCamuflaje(qreal segundosReales)
+{
+    if (!camuflado || !isfinite(segundosReales) || segundosReales <= 0.0) {
+        return;
+    }
+    tiempoCamuflaje = qMax(qreal(0), tiempoCamuflaje - segundosReales);
+    if (tiempoCamuflaje <= 1.0e-8) {
+        alternarCamuflaje();
+    }
+}
+
+qreal Jugador::segundosCamuflaje() const { return tiempoCamuflaje; }
 
 void Jugador::restablecer()
 {
@@ -90,6 +107,7 @@ void Jugador::restablecer()
     tiempoAnimacion = 0.0;
     const bool cambio = camuflado;
     camuflado = false;
+    tiempoCamuflaje = 0.0;
     velocidad = ConfiguracionCasa::rapidezJugador;
     update();
     if (cambio) {
