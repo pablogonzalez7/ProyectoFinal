@@ -16,6 +16,11 @@ qt_add_executable(PerryOperacionMedellin
     nivel.h nivel.cpp
     llave.h llave.cpp
     villano.h villano.cpp
+    vehiculo.h vehiculo.cpp
+    carretera.h carretera.cpp
+    obstaculo.h obstaculo.cpp
+    proyectil.h proyectil.cpp
+    configuracioncarretera.h
     configuracion.h
 )
 
@@ -58,7 +63,12 @@ if(CONSTRUIR_PRUEBAS)
         villano.h villano.cpp
         nivel.h nivel.cpp
         llave.h llave.cpp
-        configuracion.h
+        vehiculo.h vehiculo.cpp
+    carretera.h carretera.cpp
+    obstaculo.h obstaculo.cpp
+    proyectil.h proyectil.cpp
+    configuracioncarretera.h
+    configuracion.h
     )
     target_include_directories(pruebas_casa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(pruebas_casa PRIVATE Qt::Core Qt::Widgets)

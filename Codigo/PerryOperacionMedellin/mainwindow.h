@@ -7,6 +7,7 @@
 using namespace std;
 
 class Nivel;
+class Carretera;
 class QGraphicsView;
 class QTimer;
 class Jugador;
@@ -32,6 +33,8 @@ protected:
 private slots:
     void actualizarJuego();
     void limpiarTeclado();
+    void entrarCarretera();
+    void volverCasa();
 
 private:
     enum TeclaMovimiento : quint8 {
@@ -52,6 +55,9 @@ private:
     QTimer *temporizador;
     QElapsedTimer tiempo;
     QLabel *indicador;
+    QLabel *controles;
+    Carretera *carretera = nullptr;
+    bool enCarretera = false;
 
     quint8 teclas = 0;
 };

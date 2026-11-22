@@ -1,0 +1,55 @@
+CARRETERA - PASO 3: PERSECUCION Y LLEGADA
+Actualizacion para el proyecto con la casa ampliada y los pasos de carretera.
+
+INSTALACION
+Deten el juego. Extrae el ZIP y copia sus archivos dentro de
+Codigo/PerryOperacionMedellin, reemplazando los de igual nombre.
+No copies una carpeta de proyecto dentro de otra. CMakeLists.txt incluye
+las nuevas clases: no hace falta crearlas con el asistente de Qt Creator.
+Deja que Qt Creator reconfigure CMake y ejecuta con Ctrl+R.
+
+CONTROLES Y REGLAS
+A/D: conducir lateralmente.
+E: escudo durante 1 segundo; despues espera 6 segundos para volver a usarlo.
+F: prepara el dimensionador cuando quedan 100 metros o menos.
+R: reinicia desde la casa.
+El recorrido mide 1200 metros. El enemigo apunta a una posicion fija,
+avisa con una linea durante 0.55 segundos y dispara; no corrige la bala
+para seguir al jugador. Es un comportamiento predeterminado, sin aprendizaje.
+El escudo bloquea balas, pero no evita el lodo, los choques ni la captura.
+Tres impactos de bala o ser alcanzado provocan la derrota. Tras 1.5 segundos
+se reinicia automaticamente la casa, incluidas las llaves.
+Las barreras reducen la velocidad un 45 por ciento una vez por barrera.
+El lodo frena mientras se toca; fuera de el, el motor recupera velocidad.
+La perdida de velocidad permite al perseguidor acercarse.
+Al llegar, F debe haberse activado durante los ultimos 100 metros: bloquea
+la entrada. Si no se activo, los perseguidores dan la alarma y se pierde.
+La llegada es una pantalla provisional. El nivel de hipopotamos aun falta.
+
+FISICA Y AJUSTES
+configuracioncarretera.h contiene los valores en unidades SI.
+F_rozamiento = coeficiente * masa * gravedad
+aceleracion = (fuerzaMotor - F_rozamiento) / masa
+La velocidad integra la aceleracion y el recorrido usa la velocidad media.
+Los pasos internos son de hasta 1/120 s. Los limites de 6 y 28 m/s son
+reglas de juego. La resistencia del lodo es un valor ajustado para jugar,
+no una medicion real. La distancia al perseguidor integra la diferencia
+de velocidades. Su separacion dibujada esta comprimida para mantenerlo
+visible; el HUD indica la separacion de la simulacion en metros.
+
+EFICIENCIA Y PROPIEDAD
+Se reutilizan seis obstaculos y doce proyectiles mediante arrays de punteros.
+Los proyectiles inactivos se ocultan y se reactivan sin new/delete al disparar.
+QGraphicsScene es propietaria de los elementos graficos y los destruye.
+Las escenas se conservan al reiniciar; MainWindow es su padre QObject.
+Se usa un temporizador compartido y se actualiza solamente la escena activa.
+El cambio de escena tras perder se conecta mediante una senal encolada,
+para terminar la actualizacion antes de volver a la casa.
+El HUD emite cambios solo cuando cambia el texto visible.
+
+VALIDACION
+Compilado con Qt 6 en Linux. Pruebas de escudo, recarga, tres impactos,
+captura por perdida de velocidad y senal unica de derrota.
+Recorrido completo simulado con obstaculos y disparos activos: comprobados
+los finales con y sin F, la reutilizacion de objetos y el regreso automatico
+a la casa. Falta ejecutar esta actualizacion en tu Qt de Windows.

@@ -3,6 +3,7 @@
 #include "configuracion.h"
 #include "jugador.h"
 #include "nivel.h"
+#include "carretera.h"
 
 #include <QEvent>
 #include <QFont>
@@ -39,7 +40,7 @@ MainWindow::MainWindow(QWidget *padre)
     indicador->setFont(QFont("Arial", 10));
     indicador->setStyleSheet("background:#17222b; color:#eef3f7; padding:6px;");
     indicador->setText(escena->informacionActual());
-    auto *controles = new QLabel("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar", this);
+    controles = new QLabel("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar", this);
     controles->setFixedHeight(28);
     controles->setStyleSheet("background:#17222b; color:#eef3f7; padding-left:8px;");
 
@@ -53,7 +54,11 @@ MainWindow::MainWindow(QWidget *padre)
     setCentralWidget(contenedor);
     setFixedSize(ConfiguracionCasa::anchoVista, ConfiguracionCasa::altoVista + 84);
 
-    connect(escena, &Nivel::informacionCambiada, indicador, &QLabel::setText);
+    connect(escena, &Nivel::informacionCambiada, this, [this](const QString &texto) {
+        if (!enCarretera) indicador->setText(texto);
+    });
+    // Cambia de escena despues de terminar el ciclo actual de la casa.
+    connect(escena, &Nivel::casaSuperada, this, &MainWindow::entrarCarretera, Qt::QueuedConnection);
     connect(escena, &Nivel::controlesLiberados, this, &MainWindow::limpiarTeclado);
     connect(temporizador, &QTimer::timeout, this, &MainWindow::actualizarJuego);
     temporizador->setInterval(16);
@@ -93,7 +98,7 @@ bool MainWindow::eventFilter(QObject *objeto, QEvent *evento)
     } else if (evento->type() == QEvent::FocusIn) {
         tiempo.start();
         temporizador->start();
-        setWindowTitle("Perry: Operacion Medellin - La casa");
+        setWindowTitle(enCarretera ? "Perry: Operacion Medellin - Carretera" : "Perry: Operacion Medellin - La casa");
     } else if (evento->type() == QEvent::KeyPress || evento->type() == QEvent::KeyRelease) {
         auto *eventoTeclado = static_cast<QKeyEvent *>(evento);
         const bool presionada = evento->type() == QEvent::KeyPress;
@@ -106,13 +111,18 @@ bool MainWindow::eventFilter(QObject *objeto, QEvent *evento)
         case Qt::Key_D: mascara = Derecha; break;
         case Qt::Key_R:
             if (presionada && !eventoTeclado->isAutoRepeat()) {
-                escena->reiniciarCasa();
-                tiempo.start();
+                volverCasa();
             }
+            return true;
+        case Qt::Key_E:
+            if(enCarretera && presionada && !eventoTeclado->isAutoRepeat()) carretera->activarEscudo();
+            return true;
+        case Qt::Key_F:
+            if(enCarretera && presionada && !eventoTeclado->isAutoRepeat()) carretera->activarDimensionador();
             return true;
         case Qt::Key_C:
             if (presionada && !eventoTeclado->isAutoRepeat()
-                && escena->obtenerEstado() == Nivel::EnJuego) {
+                && !enCarretera && escena->obtenerEstado() == Nivel::EnJuego) {
                 jugador->alternarCamuflaje();
             }
             return true;
@@ -123,7 +133,7 @@ bool MainWindow::eventFilter(QObject *objeto, QEvent *evento)
         if (eventoTeclado->isAutoRepeat()) {
             return true;
         }
-        if (presionada && escena->obtenerEstado() == Nivel::EnJuego) {
+        if (presionada && (enCarretera || escena->obtenerEstado() == Nivel::EnJuego)) {
             teclas |= mascara;
         } else {
             teclas &= ~mascara;
@@ -138,12 +148,48 @@ void MainWindow::actualizarDireccion()
 {
     const int horizontal = ((teclas & Derecha) != 0) - ((teclas & Izquierda) != 0);
     const int vertical = ((teclas & Abajo) != 0) - ((teclas & Arriba) != 0);
-    jugador->establecerDireccion(QPointF(horizontal, vertical));
+    if (enCarretera) carretera->establecerDireccion(horizontal);
+    else jugador->establecerDireccion(QPointF(horizontal, vertical));
 }
 
 void MainWindow::actualizarJuego()
 {
     const qreal segundosReales = tiempo.restart() / 1000.0;
-    escena->actualizar(segundosReales);
+    if (enCarretera) carretera->actualizar(segundosReales);
+    else { escena->actualizar(segundosReales); vista->centerOn(jugador); }
+}
+
+void MainWindow::entrarCarretera()
+{
+    if (enCarretera || escena->obtenerEstado()!=Nivel::Completado) return;
+    limpiarTeclado();
+    if (!carretera) {
+        carretera = new Carretera(this);
+        connect(carretera, &Carretera::partidaPerdida, this, [this] {
+            if(enCarretera && carretera->obtenerEstado()==Carretera::Derrota) volverCasa();
+        }, Qt::QueuedConnection);
+        connect(carretera, &Carretera::informacionCambiada, this, [this](const QString &texto) {
+            if (enCarretera) indicador->setText(texto);
+        });
+    }
+    carretera->reiniciar();
+    enCarretera=true;
+    vista->setScene(carretera);
+    vista->centerOn(carretera->sceneRect().center());
+    indicador->setText(carretera->informacionActual());
+    controles->setText("A/D: conducir    |    E: escudo    |    F: dimensionador al final    |    R: reiniciar");
+    setWindowTitle("Perry: Operacion Medellin - Carretera");
+    tiempo.start();
+}
+void MainWindow::volverCasa()
+{
+    limpiarTeclado();
+    enCarretera=false;
+    escena->reiniciarCasa();
+    vista->setScene(escena);
     vista->centerOn(jugador);
+    indicador->setText(escena->informacionActual());
+    controles->setText("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar");
+    setWindowTitle("Perry: Operacion Medellin - La casa");
+    tiempo.start();
 }
