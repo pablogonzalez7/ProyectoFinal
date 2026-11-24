@@ -1,0 +1,74 @@
+HACIENDA - SALTOS, HIPOPOTAMOS Y LIANAS
+Base: carretera completa confirmada en la rama cristian (commit ff46d4b).
+
+INSTALACION
+Deten el juego. Extrae el ZIP y copia los archivos dentro de
+Codigo/PerryOperacionMedellin, reemplazando los existentes.
+CMakeLists.txt ya registra las clases nuevas. No es necesario usar el
+asistente de clases. Deja que Qt Creator reconfigure y ejecuta Ctrl+R.
+Se reutiliza imagenes/perry.png: no hay que descargar otra imagen.
+
+COMO ENTRAR Y JUGAR
+Supera la casa y completa los 1200 metros de carretera.
+Al llegar, pulsa F UNA VEZ para bloquear la entrada y entrar a la hacienda.
+F antes de llegar no se guarda; Enter ya no cambia el nivel. Puedes esperar
+en la llegada sin perder vidas ni recibir disparos.
+A/D: caminar. Espacio: saltar. Suelta Espacio para poder saltar de nuevo.
+R: reiniciar la hacienda. Perder el foco de la ventana pausa el juego.
+No se puede saltar en el aire. Puedes corregir el movimiento horizontal
+mientras saltas. Las plataformas se atraviesan desde abajo y solo apoyan
+al caer sobre su borde superior.
+En el rio hay ocho hipopotamos, cuatro orillas y tres tramos de agua.
+Despues hay dos lianas y dos orillas adicionales. Los hipopotamos
+cambian a amarillo con un signo ! un segundo antes de sumergirse. Durante
+la inmersion o la salida no sostienen al jugador. Observa su ciclo antes
+de abandonar una orilla. Una linea clara indica la superficie de apoyo.
+Caer al agua quita una vida. Con vidas restantes se reaparece en la ultima
+orilla alcanzada; al agotar las tres, se reinicia toda esta zona desde la
+entrada a la hacienda. No se vuelve a la casa ni a la carretera.
+Tras el rio, manten E y salta hacia el extremo de una liana para agarrarte.
+Pulsa Espacio otra vez para soltarte: conviene hacerlo mientras avanzas
+hacia la siguiente orilla, despues de pasar por el centro del balanceo.
+El vuelo conserva la velocidad tangencial: A/D no lo modifica hasta aterrizar.
+El final actual es la entrada vigilada. Los guardias y el jefe siguen pendientes.
+Los hipopotamos usan sprites PNG transparentes con parpadeo, aviso e inmersion.
+
+FISICA DEL SALTO
+Posicion vertical: y_nueva = y + vy*dt + 0.5*g*dt*dt.
+Velocidad vertical: vy_nueva = vy + g*dt.
+Qt tiene el eje Y positivo hacia abajo: el impulso inicial es negativo.
+Escala: 100 px/m; velocidad horizontal 250 px/s; impulso 540 px/s;
+gravedad ajustada para el juego: 1400 px/s^2 (14 m/s^2).
+Altura maxima ideal: impulso^2/(2*g) = 104.14 px.
+Tiempo de vuelo a igual altura: 2*impulso/g = 0.7714 s.
+Alcance a rapidez horizontal constante: aproximadamente 192.86 px.
+Las colisiones comparan los pies anteriores y actuales para detectar el
+cruce de una superficie al descender. Se usan pasos de hasta 1/120 s.
+Los ciclos del hipopotamo son reglas temporizadas; no son otro modelo
+fisico ni aprendizaje del agente. Los valores estan en configuracionhacienda.h.
+
+CLASES, CONTENEDORES Y MEMORIA
+Jugador conserva su herencia de Personaje y agrega un modo de plataformas.
+La caja de colision sigue siendo 32x40 en la casa; en la hacienda es 56x44.
+La hoja original incluye poses laterales: se preparan y reflejan una sola
+vez al cargar. paint no abre archivos ni recorta o escala imagenes.
+Plataforma es concreta y tiene metodos virtuales. Hipopotamo hereda de ella
+publicamente, cambia su apariencia y decide cuando permite apoyo.
+Hacienda mantiene vector<Plataforma *> con reserve(14) para orillas e
+hipopotamos. La escena es propietaria de los objetos graficos; el vector
+solo los referencia y no debe eliminarlos manualmente.
+No se crean o destruyen objetos al saltar, caer o reiniciar.
+Se mantiene un solo temporizador para el juego y solo se actualiza la
+escena activa. El HUD se cambia cuando cambia su texto.
+
+VALIDACION REALIZADA
+Compilacion nativa con Qt 6 en Linux y pruebas automaticas de:
+- Formula del salto, aterrizaje y rechazo del doble salto.
+- Aviso, inmersion, salida y perdida del apoyo al hundirse.
+- Cruce desde abajo sin aterrizar mientras se asciende.
+- Tres vidas y reinicio desde la hacienda.
+- Cruce completo con movimiento, saltos y esperas, sin teletransportar
+  al jugador ni alterar los ciclos: terminado con tres vidas.
+- Cien reinicios sin aumentar el numero de objetos.
+- Transicion casa-carretera-hacienda y teclas F, Espacio y R.
+Falta probar esta actualizacion en tu instalacion de Windows.

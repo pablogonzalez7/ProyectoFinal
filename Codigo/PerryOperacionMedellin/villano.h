@@ -2,6 +2,7 @@
 #define VILLANO_H
 
 #include "personaje.h"
+#include <QPixmap>
 #include <QList>
 #include <QPointF>
 #include <array>
@@ -37,6 +38,8 @@ signals:
     void estadoCambiado();
 
 private:
+    QPixmap sprites[4][2];
+    qreal pasoAnimacion = 0;
     QPointF centro() const;
     void cambiarEstado(Estado nuevoEstado);
     void comprobarJugador();

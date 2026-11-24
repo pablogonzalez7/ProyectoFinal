@@ -1,0 +1,61 @@
+SPRITES DE AMBIENTES: CASA, LIANAS, AGUA Y SUELO
+
+INSTALACION
+Este ZIP se aplica sobre el proyecto con la actualizacion anterior de sprites
+(policias, carros, proyectiles, obstaculos e hipopotamos).
+Tambien incluye el codigo de las lianas: no necesitas aplicar su ZIP por separado.
+
+1. Deten el juego y guarda lo que tengas abierto en Qt Creator.
+2. Extrae el ZIP en una carpeta temporal.
+3. Copia TODO su contenido dentro de Codigo/PerryOperacionMedellin,
+   junto al CMakeLists.txt actual. Combina imagenes y pruebas, y reemplaza
+   los archivos con el mismo nombre. No elimines las imagenes anteriores.
+4. Qt Creator debe reconfigurar CMake. Si no lo hace: Build > Run CMake.
+5. Compila y ejecuta con Ctrl+R.
+Las clases y los PNG ya estan registrados: no uses el asistente de clases.
+
+RECURSOS NUEVOS
+imagenes/pisos_casa.png: hoja 3x2, seis pisos distintos.
+  Fila 1: dormitorio (madera), sala (alfombra), oficina (baldosa azul).
+  Fila 2: bodega (piedra), comedor (terracota), garaje (concreto).
+imagenes/muebles_casa.png: hoja 3x3 con nueve muebles transparentes:
+  cama, cajas, estanteria, sofa, mesa, aparador, escritorio,
+  banco de herramientas y neumaticos sobre un soporte.
+imagenes/liana.png: cuerda vegetal transparente con hojas y nudo.
+imagenes/agua_hacienda.png: textura de ondas para el rio.
+imagenes/suelo_hacienda.png: tierra, raices, rocas y cesped para las orillas.
+
+INTEGRACION
+Los muebles se dibujan en los rectangulos existentes de colision.
+Las paredes, puertas, rutas, llaves y posiciones de los guardias se conservan.
+Las etiquetas de las habitaciones tienen fondo oscuro para seguir siendo legibles.
+El suelo mantiene el borde de apoyo a la misma altura que antes.
+La liana se dibuja girando alrededor de su anclaje; la fisica del pendulo
+conserva los parametros de la actualizacion anterior.
+El agua se desplaza suavemente con el tiempo del juego. Cambiar de ventana
+pausa la simulacion, incluida la animacion del agua.
+
+EFICIENCIA
+Las variantes de los PNG se preparan al construir los objetos y se comparten
+mediante la cache existente. Las hojas se recortan fuera del ciclo de juego.
+No se abren PNG ni se crean pixmaps nuevos en paint o al actualizar la fisica.
+Las orillas repiten una textura pequena; no necesitan una imagen diferente
+por cada ancho. El agua repinta su franja visible usando el temporizador
+existente, sin crear otro reloj. La rotacion de la liana usa el pintor.
+Se reutilizan los objetos al reiniciar.
+
+CONTROLES
+Casa: WASD para moverse, C para camuflaje, R para reiniciar.
+Carretera: A/D para conducir, E para escudo; al llegar a 1200 m, F una vez.
+Hacienda: A/D para moverse, Espacio para saltar o soltarse de la liana;
+manten E para agarrarte cuando el extremo este cerca. R reinicia la hacienda.
+
+VALIDACION
+Compilacion y comprobacion visual con Qt 6 en Linux.
+Las pruebas de la hacienda verifican el recorrido con hipopotamos y dos
+lianas, los puntos seguros, vidas, reinicios y las teclas de transicion.
+Se comprueban tambien las mecanicas de la casa con las nuevas imagenes.
+Falta probar esta actualizacion en tu Windows.
+
+Los recursos se crearon con generacion de imagenes y se integraron con Qt.
+Los prompts utilizados estan en PROMPTS_AMBIENTES.txt.

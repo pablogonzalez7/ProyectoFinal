@@ -39,11 +39,9 @@ void Carretera::reiniciar() {
 void Carretera::establecerDireccion(int direccion) { vehiculo->establecerDireccion(direccion); }
 QString Carretera::informacionActual() const {
     if(estado==Derrota) return "ESCAPE FALLIDO | Regresando al inicio de la casa...";
-    if(estado==Llegada) return "HACIENDA NAPOLES | Perseguidores bloqueados. R: volver al inicio.";
+    if(estado==Llegada) return "1200/1200 m | Llegaste a la hacienda.\nPulsa F una vez para bloquear la entrada y pasar al nivel 2.";
     const QString escudo=tiempoEscudo>0 ? "ACTIVO" : (recarga>0 ? QString("%1 s").arg(qCeil(recarga)) : "LISTO (E)");
     QString objetivo=enLodo ? "LODO: el perseguidor se acerca." : "Esquiva las barreras y los disparos.";
-    if(distancia>=ConfiguracionCarretera::longitudRecorrido-ConfiguracionCarretera::ventanaDimensionador)
-        objetivo=dimensionador ? "Dimensionador listo: la entrada quedara bloqueada." : "PULSA F: prepara el dimensionador antes de llegar!";
     return QString("%1/%2 m | %3 km/h | Resistencia: %4/3 | Perseguidor: %5 m | Escudo: %6\n%7")
         .arg(int(distancia)).arg(int(ConfiguracionCarretera::longitudRecorrido))
         .arg(qRound(vehiculo->velocidadMetrosSegundo()*3.6)).arg(resistencia)
@@ -61,9 +59,9 @@ void Carretera::activarEscudo() {
     publicarInformacion();
 }
 void Carretera::activarDimensionador() {
-    if(estado==Conduciendo && distancia>=ConfiguracionCarretera::longitudRecorrido-ConfiguracionCarretera::ventanaDimensionador) {
-        dimensionador=true; publicarInformacion();
-    }
+    if(estado!=Llegada || dimensionador) return;
+    dimensionador=true;
+    emit entradaHabilitada();
 }
 void Carretera::finalizar(bool victoria,const QString &mensaje) {
     if(estado!=Conduciendo) return;
@@ -156,7 +154,7 @@ void Carretera::actualizar(qreal segundos) {
         actualizarPersecucion(paso);
         if(estado==Conduciendo && distancia>=ConfiguracionCarretera::longitudRecorrido) {
             distancia=ConfiguracionCarretera::longitudRecorrido;
-            finalizar(dimensionador,dimensionador ? "Llegaste a la hacienda!\nLa entrada quedo bloqueada." : "No bloqueaste la entrada!\nLos perseguidores dieron la alarma.");
+            finalizar(true,"Llegaste a la hacienda!\nPulsa F para entrar al nivel 2.");
         }
         pendiente-=paso;
     }

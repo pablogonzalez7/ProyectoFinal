@@ -1,0 +1,75 @@
+ACTUALIZACION: LIANAS DE LA HACIENDA
+Requiere la actualizacion anterior de sprites e hipopotamos instalada.
+
+INSTALACION EN QT CREATOR (WINDOWS)
+1. Deten el juego y guarda tus archivos.
+2. Extrae este ZIP en una carpeta temporal.
+3. Copia TODO su contenido dentro de Codigo/PerryOperacionMedellin,
+   donde esta CMakeLists.txt. Reemplaza los archivos existentes.
+4. En Qt Creator deja que CMake reconfigure; si no ocurre, usa
+   Build > Run CMake. No necesitas crear las clases con el asistente.
+5. Ejecuta con Ctrl+R.
+No se incluyen build, .qtcreator ni configuraciones locales.
+
+COMO JUGAR
+Completa la carretera (1200 m) y pulsa F una vez. Cruza el rio.
+Al llegar a las lianas:
+- Acercate al borde de la orilla y observa el balanceo.
+- Manten E y pulsa Espacio para saltar cuando el extremo se acerque.
+- Al estar cerca del extremo, Perry se agarra automaticamente.
+- Espera a que se balancee hacia la derecha. Pulsa Espacio para soltarte
+  despues de pasar por el punto mas bajo; no esperes hasta el extremo,
+  porque alli la velocidad se acerca a cero.
+- Conservas la velocidad del balanceo. A/D no cambia ese vuelo.
+- Al aterrizar, A/D vuelve a mover a Perry con normalidad.
+- La orilla intermedia guarda el punto de reaparicion.
+Caer quita una vida. Con vidas restantes reapareces en la ultima orilla.
+Al perder las tres vuelves a la entrada de la hacienda. R reinicia esta zona.
+Cambiar de ventana pausa el juego; si estabas agarrado, permaneces agarrado.
+Al soltar hay 0.5 segundos de espera antes de poder agarrar otra vez.
+La version termina en la entrada vigilada. El combate con los guardias
+es el siguiente paso; todavia no se incluye.
+
+FISICA PARA ENTENDER Y EXPLICAR
+Liana: pendulo ideal no lineal, cuerda rigida de 260 px.
+theta'' = -(g/L) * sin(theta), con g = 1400 px/s^2.
+Se integra con Velocity Verlet, en pasos de hasta 1/120 s.
+x = anclajeX + L*sin(theta)
+y = anclajeY + L*cos(theta)
+Al soltarse: vx = L*cos(theta)*omega, vy = -L*sin(theta)*omega.
+Desde ese instante el vuelo tiene aceleracion (0,g), sin impulso extra.
+Qt tiene Y positivo hacia abajo. El angulo se mide desde la vertical.
+El modelo omite rozamiento del aire y mantiene el balanceo sin amortiguacion.
+El agarre adapta a Perry al movimiento existente de la liana: no se modela
+el intercambio de momento del choque al agarrarse. Es una simplificacion.
+El vuelo tras soltar SI usa la velocidad tangencial calculada.
+La gravedad esta ajustada al juego, no representa exactamente 9.81 m/s^2.
+
+EFICIENCIA Y PROPIEDAD
+- array<Liana*,2> porque hay exactamente dos lianas; no crece ni se realoca.
+- vector<Plataforma*> con reserve(14) para los apoyos existentes.
+- QGraphicsScene posee los items y los elimina al destruirse; los
+  contenedores guardan referencias, no deben borrarlas por separado.
+- Reiniciar restablece los objetos existentes: no crea nuevas lianas.
+- Un temporizador, actualizacion solo de la escena activa.
+- El agarre compara distancia al cuadrado para evitar una raiz cuadrada.
+- Revisar dos lianas cuesta tiempo constante; no hace falta un indice espacial.
+- Integracion con pasos pequenos limita errores y cruces de plataformas.
+- Ningun archivo de imagen se abre durante la simulacion de las lianas.
+Estos son puntos concretos para explicar; no se ha medido una mejora de FPS.
+
+PRUEBAS
+Compilado con Qt 6.8.2 en Linux. Verificado:
+- Pendulo durante 60 s, longitud constante y velocidad tangencial.
+- Error relativo maximo de energia menor al 0.01% en esa prueba.
+- Rio y ambas lianas recorridos con controles normales, sin teletransportar
+  ni cambiar sus ciclos: se conservan las tres vidas.
+- Velocidad al soltarse y trayectoria parabolica; A/D no cambia ese vuelo.
+- Checkpoint, tres vidas, cien reinicios sin aumentar el numero de items.
+- Teclado E, Espacio, R, pausa y F una sola vez al llegar a 1200 m.
+Las pruebas aisladas de colisiones y teclado si colocan objetos en posiciones
+controladas; la prueba del recorrido completo no lo hace.
+La prueba nueva esta en pruebas/prueba_lianas.cpp; CONSTRUIR_PRUEBAS=ON
+habilita los ejecutables de pruebas con CMake. Se guardan capturas en
+capturas_lianas dentro del directorio de ejecucion de la prueba.
+Falta comprobar esta actualizacion en tu instalacion de Windows.

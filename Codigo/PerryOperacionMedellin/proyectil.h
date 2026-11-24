@@ -1,6 +1,7 @@
 #ifndef PROYECTIL_H
 #define PROYECTIL_H
 #include <QGraphicsItem>
+#include <QPixmap>
 #include <QPointF>
 using namespace std;
 class Proyectil : public QGraphicsItem {
@@ -13,6 +14,7 @@ public:
     void desactivar();
     bool estaActivo() const { return activo; }
 private:
+    QPixmap sprite;
     bool activo=false;
     QPointF velocidad;
 };

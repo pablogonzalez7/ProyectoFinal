@@ -1,6 +1,7 @@
 #ifndef OBSTACULO_H
 #define OBSTACULO_H
 #include <QGraphicsItem>
+#include <QPixmap>
 using namespace std;
 class Obstaculo : public QGraphicsItem {
 public:
@@ -13,6 +14,7 @@ public:
     bool fueGolpeado() const { return golpeado; }
     void marcarGolpe();
 private:
+    QPixmap spriteBarrera, spriteLodo;
     Tipo tipo=Barrera;
     bool golpeado=false;
 };

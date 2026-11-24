@@ -1,4 +1,5 @@
 #include "villano.h"
+#include "recursossprites.h"
 #include "configuracion.h"
 #include "jugador.h"
 #include "nivel.h"
@@ -11,6 +12,7 @@
 #include <QPen>
 #include <QtMath>
 #include <stdexcept>
+#include <cmath>
 
 using namespace std;
 
@@ -29,6 +31,18 @@ Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
 {
     if (!nivel || !jugador || patrulla.size() < 2) {
         throw invalid_argument("Un guardia necesita nivel, jugador y al menos dos puntos de patrulla.");
+    }
+    const QPixmap hoja(":/imagenes/policias.png");
+    if (hoja.isNull()) throw runtime_error("No se pudo cargar la hoja de policias.");
+    for (int columna = 0; columna < 4; ++columna) {
+        for (int fila = 0; fila < 2; ++fila) {
+            const int ancho = hoja.width() / 4, alto = hoja.height() / 2;
+            // Cada celda contiene la misma figura; se excluyen los margenes.
+            const QRect recorte(columna * ancho + ancho * 22 / 100,
+                                fila * alto + alto * 4 / 100,
+                                ancho * 56 / 100, alto * 92 / 100);
+            sprites[columna][fila] = RecursosSprites::cargar(":/imagenes/policias.png", QSize(26,40), recorte);
+        }
     }
     camino.reserve(ConfiguracionCasa::totalCeldas + 2);
     setAcceptedMouseButtons(Qt::NoButton);
@@ -78,6 +92,7 @@ void Villano::cambiarEstado(Estado nuevoEstado)
 void Villano::restablecer()
 {
     alarma = false;
+    pasoAnimacion = 0;
     cambiarEstado(Patrullando);
     velocidad = ConfiguracionCasa::rapidezPatrulla;
     setPos(patrulla.first() - boundingRect().center());
@@ -166,6 +181,7 @@ void Villano::seguirRuta(qreal segundosTranscurridos)
         if (avance2 < 1.0e-12) {
             return;
         }
+        pasoAnimacion = fmod(pasoAnimacion + qSqrt(avance2) / 12.0, 2.0);
         setPos(pos() + permitido);
         direccionVista = permitido / qSqrt(avance2);
         presupuesto -= longitud;
@@ -192,6 +208,8 @@ void Villano::actualizar(qreal segundosTranscurridos)
     }
     // La percepcion sigue activa durante las pausas; no son periodos de ceguera.
     if (estado == Patrullando && esperaPatrulla > 0.0) {
+        pasoAnimacion = 0;
+        update();
         esperaPatrulla -= segundosTranscurridos;
         actualizarCono();
         return;
@@ -245,17 +263,12 @@ void Villano::actualizarCono(bool forzar)
 
 void Villano::paint(QPainter *pintor, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    // Dibujo provisional del guardia, independiente de su comportamiento.
-    pintor->setPen(Qt::NoPen);
-    pintor->setBrush(QColor(20, 22, 27));
-    pintor->drawRect(QRectF(6, 31, 8, 8));
-    pintor->drawRect(QRectF(18, 31, 8, 8));
-    pintor->setBrush(estado == Persiguiendo ? QColor(180, 60, 48) : QColor(160, 115, 75));
-    pintor->drawRoundedRect(QRectF(4, 14, 24, 21), 4, 4);
-    pintor->setBrush(QColor(225, 177, 125));
-    pintor->drawEllipse(QRectF(8, 2, 16, 17));
-    pintor->setBrush(QColor(45, 30, 23));
-    pintor->drawRect(QRectF(8, 2, 16, 5));
-    pintor->setBrush(QColor(245, 245, 220));
-    pintor->drawEllipse(boundingRect().center() + direccionVista * 9.0, 2.0, 2.0);
+    int orientacion = direccionVista.y() < 0 ? 1 : 0;
+    if (qAbs(direccionVista.x()) >= qAbs(direccionVista.y()))
+        orientacion = direccionVista.x() < 0 ? 2 : 3;
+    pintor->drawPixmap(3, 0, sprites[orientacion][int(pasoAnimacion) % 2]);
+    if (estado == Persiguiendo) {
+        pintor->setPen(QColor("#ff786b"));
+        pintor->drawText(QRectF(24,0,8,14), Qt::AlignCenter, "!");
+    }
 }

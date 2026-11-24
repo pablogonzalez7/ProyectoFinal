@@ -20,6 +20,12 @@ qt_add_executable(PerryOperacionMedellin
     carretera.h carretera.cpp
     obstaculo.h obstaculo.cpp
     proyectil.h proyectil.cpp
+    hacienda.h hacienda.cpp
+    liana.h liana.cpp
+    plataforma.h plataforma.cpp
+    hipopotamo.h hipopotamo.cpp
+    recursossprites.h recursossprites.cpp
+    configuracionhacienda.h
     configuracioncarretera.h
     configuracion.h
 )
@@ -49,33 +55,66 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
     PREFIX "/"
     FILES
         imagenes/perry.png
+        imagenes/hipopotamos.png
+        imagenes/policias.png
+        imagenes/carro_perry.png
+        imagenes/carro_policia.png
+        imagenes/bala.png
+        imagenes/barrera.png
+        imagenes/lodo.png
+        imagenes/pisos_casa.png
+        imagenes/muebles_casa.png
+        imagenes/liana.png
+        imagenes/agua_hacienda.png
+        imagenes/suelo_hacienda.png
 )
 
 # Opcional: pruebas de mecanicas, rutas, reinicios y teclado.
-option(CONSTRUIR_PRUEBAS "Compilar las pruebas de la casa" OFF)
+option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    qt_add_executable(pruebas_casa
-        pruebas/prueba_casa.cpp
-        mainwindow.h mainwindow.cpp mainwindow.ui
-        personaje.h personaje.cpp
-        jugador.h jugador.cpp
-        villano.h villano.cpp
-        nivel.h nivel.cpp
-        llave.h llave.cpp
-        vehiculo.h vehiculo.cpp
-    carretera.h carretera.cpp
-    obstaculo.h obstaculo.cpp
-    proyectil.h proyectil.cpp
-    configuracioncarretera.h
-    configuracion.h
-    )
-    target_include_directories(pruebas_casa PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(pruebas_casa PRIVATE Qt::Core Qt::Widgets)
-    qt_add_resources(pruebas_casa "imagenes_pruebas"
-        PREFIX "/"
-        FILES imagenes/perry.png
-    )
-    add_test(NAME casa COMMAND pruebas_casa ${CMAKE_CURRENT_BINARY_DIR}/capturas)
-    set_tests_properties(casa PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+    foreach(prueba IN ITEMS casa lianas)
+        qt_add_executable(pruebas_${prueba}
+            pruebas/prueba_${prueba}.cpp
+            mainwindow.h mainwindow.cpp mainwindow.ui
+            personaje.h personaje.cpp
+            jugador.h jugador.cpp
+            villano.h villano.cpp
+            nivel.h nivel.cpp
+            llave.h llave.cpp
+            vehiculo.h vehiculo.cpp
+            carretera.h carretera.cpp
+            obstaculo.h obstaculo.cpp
+            proyectil.h proyectil.cpp
+            hacienda.h hacienda.cpp
+            liana.h liana.cpp
+            plataforma.h plataforma.cpp
+            hipopotamo.h hipopotamo.cpp
+            recursossprites.h recursossprites.cpp
+            configuracionhacienda.h
+            configuracioncarretera.h
+            configuracion.h
+        )
+        target_include_directories(pruebas_${prueba} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(pruebas_${prueba} PRIVATE Qt::Core Qt::Widgets)
+        qt_add_resources(pruebas_${prueba} "imagenes_pruebas_${prueba}"
+            PREFIX "/"
+            FILES
+                imagenes/perry.png
+                imagenes/hipopotamos.png
+                imagenes/policias.png
+                imagenes/carro_perry.png
+                imagenes/carro_policia.png
+                imagenes/bala.png
+                imagenes/barrera.png
+                imagenes/lodo.png
+                imagenes/pisos_casa.png
+                imagenes/muebles_casa.png
+                imagenes/liana.png
+                imagenes/agua_hacienda.png
+                imagenes/suelo_hacienda.png
+        )
+        add_test(NAME ${prueba} COMMAND pruebas_${prueba} ${CMAKE_CURRENT_BINARY_DIR}/capturas)
+        set_tests_properties(${prueba} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+    endforeach()
 endif()

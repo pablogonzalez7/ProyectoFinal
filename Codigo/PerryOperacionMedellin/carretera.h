@@ -36,6 +36,7 @@ public:
 signals:
     void partidaPerdida();
     void haciendaAlcanzada();
+    void entradaHabilitada();
     void informacionCambiada(const QString &texto);
 protected:
     void drawBackground(QPainter *, const QRectF &) override;

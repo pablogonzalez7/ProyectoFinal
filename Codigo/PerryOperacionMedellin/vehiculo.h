@@ -1,6 +1,7 @@
 #ifndef VEHICULO_H
 #define VEHICULO_H
 #include <QGraphicsItem>
+#include <QPixmap>
 using namespace std;
 class Vehiculo : public QGraphicsItem {
 public:
@@ -16,6 +17,7 @@ public:
     void recibirImpacto();
     void establecerEnemigo(bool valor) { enemigo=valor; update(); }
 private:
+    QPixmap spriteJugador, spriteEnemigo;
     int direccionHorizontal=0;
     qreal velocidad=28.0;
     bool enemigo=false;

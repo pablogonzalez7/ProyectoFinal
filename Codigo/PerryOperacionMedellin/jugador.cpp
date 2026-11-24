@@ -1,11 +1,13 @@
 #include "jugador.h"
 #include "nivel.h"
 #include "configuracion.h"
+#include "configuracionhacienda.h"
 
 #include <QDebug>
 #include <QPainter>
 #include <QRect>
 #include <QSize>
+#include <QTransform>
 #include <QtMath>
 #include <stdexcept>
 #include <cmath>
@@ -63,6 +65,18 @@ void Jugador::cargarSprites()
         }
     }
 
+    // Ultima fila de la misma hoja: poses laterales de pie y salto.
+    // Se preparan una vez; no se recorta ni escala dentro de paint().
+    const QRect laterales[3] = {
+        QRect(194, 916, 210, 146), QRect(467, 914, 210, 146), QRect(745, 895, 215, 160)
+    };
+    for (int i = 0; i < 3; ++i) {
+        fotogramasLaterales[1][i] = hoja.copy(laterales[i])
+            .scaled(QSize(56, 44), Qt::KeepAspectRatio, Qt::FastTransformation);
+        fotogramasLaterales[0][i] = fotogramasLaterales[1][i]
+            .transformed(QTransform().scale(-1, 1));
+    }
+
     // Quinta fila: cuatro apariencias sin sombrero (no es un ciclo de pasos).
     const QRect recortesCamuflados[cantidadDirecciones] = {
         QRect(244, 716, 128, 176), QRect(515, 716, 128, 176),
@@ -76,6 +90,7 @@ void Jugador::cargarSprites()
 
 void Jugador::alternarCamuflaje()
 {
+    if (modoPlataformas) return;
     camuflado = !camuflado;
     tiempoCamuflaje = camuflado ? ConfiguracionCasa::duracionCamuflaje : 0.0;
     velocidad = camuflado ? ConfiguracionCasa::rapidezCamuflado
@@ -102,13 +117,17 @@ qreal Jugador::segundosCamuflaje() const { return tiempoCamuflaje; }
 void Jugador::restablecer()
 {
     direccion = QPointF();
-    orientacion = Abajo;
+    velocidadVertical = 0;
+    velocidadHorizontalVuelo = 0;
+    vueloInercial = false;
+    enSuelo = false;
+    orientacion = modoPlataformas ? Derecha : Abajo;
     fotogramaActual = 0;
     tiempoAnimacion = 0.0;
     const bool cambio = camuflado;
     camuflado = false;
     tiempoCamuflaje = 0.0;
-    velocidad = ConfiguracionCasa::rapidezJugador;
+    velocidad = modoPlataformas ? ConfiguracionHacienda::rapidezJugador : ConfiguracionCasa::rapidezJugador;
     update();
     if (cambio) {
         emit camuflajeCambiado(false);
@@ -159,6 +178,18 @@ void Jugador::establecerDireccion(const QPointF &nuevaDireccion)
 
 void Jugador::actualizar(qreal segundosTranscurridos)
 {
+    if (modoPlataformas) {
+        if (!isfinite(segundosTranscurridos) || segundosTranscurridos <= 0) return;
+        const qreal dt = segundosTranscurridos;
+        const qreal dx = (vueloInercial ? velocidadHorizontalVuelo : direccion.x() * velocidad) * dt;
+        // Integracion exacta para aceleracion gravitacional constante.
+        const qreal dy = enSuelo ? 0 : velocidadVertical * dt
+                                  + 0.5 * ConfiguracionHacienda::gravedad * dt * dt;
+        if (!enSuelo) velocidadVertical += ConfiguracionHacienda::gravedad * dt;
+        moveBy(dx, dy);
+        actualizarAnimacion(dt, enSuelo && abs(dx) > 0);
+        return;
+    }
     if (direccion.isNull()) {
         actualizarAnimacion(segundosTranscurridos, false);
         return;
@@ -209,7 +240,9 @@ void Jugador::paint(QPainter *pintor,
                     const QStyleOptionGraphicsItem *opciones,
                     QWidget *widget)
 {
-    const QPixmap &imagen = camuflado ? aparienciasCamufladas[orientacion]
+    const int poseLateral = !enSuelo ? 2 : (direccion.isNull() ? 0 : fotogramaActual % 2);
+    const QPixmap &imagen = modoPlataformas ? fotogramasLaterales[orientacion == Izquierda ? 0 : 1][poseLateral]
+                            : camuflado ? aparienciasCamufladas[orientacion]
                                       : fotogramas[orientacion][fotogramaActual];
 
     if (imagen.isNull()) {
@@ -224,6 +257,53 @@ void Jugador::paint(QPainter *pintor,
         cuerpo.bottom() - imagen.height()
     );
 
-    // El dibujo cambia; la caja de colision conserva sus 32 x 40 pixeles.
+    // Cada modo conserva su caja de colision aunque cambie la pose.
     pintor->drawPixmap(origen, imagen);
+}
+
+void Jugador::activarModoPlataformas()
+{
+    prepareGeometryChange();
+    modoPlataformas = true;
+    restablecer();
+}
+
+void Jugador::saltar()
+{
+    if (!modoPlataformas || !enSuelo) return;
+    vueloInercial = false;
+    velocidadVertical = -ConfiguracionHacienda::impulsoSalto;
+    enSuelo = false;
+}
+
+void Jugador::aterrizar(qreal alturaSuperficie)
+{
+    setY(alturaSuperficie - boundingRect().height());
+    velocidadVertical = 0;
+    velocidadHorizontalVuelo = 0;
+    vueloInercial = false;
+    enSuelo = true;
+}
+
+void Jugador::establecerEnSuelo(bool apoyado) { enSuelo = apoyado; }
+bool Jugador::estaEnSuelo() const { return enSuelo; }
+qreal Jugador::velocidadVerticalActual() const { return velocidadVertical; }
+
+QRectF Jugador::boundingRect() const
+{
+    return modoPlataformas ? QRectF(0, 0, 56, 44) : Personaje::boundingRect();
+}
+
+void Jugador::iniciarVuelo(const QPointF &velocidadInicial)
+{
+    vueloInercial = true;
+    enSuelo = false;
+    velocidadHorizontalVuelo = velocidadInicial.x();
+    velocidadVertical = velocidadInicial.y();
+    if (velocidadInicial.x() != 0) orientacion = velocidadInicial.x() < 0 ? Izquierda : Derecha;
+}
+QPointF Jugador::velocidadVueloActual() const
+{
+    return QPointF(vueloInercial ? velocidadHorizontalVuelo : direccion.x()*velocidad,
+                   velocidadVertical);
 }

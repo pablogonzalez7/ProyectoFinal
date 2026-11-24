@@ -12,7 +12,6 @@ constexpr qreal rozamientoLodo=1.5; // Resistencia efectiva ajustada para el jue
 constexpr qreal velocidadMaxima=28.0; // m/s
 constexpr qreal velocidadMinima=6.0; // Limite jugable para no quedar inmovil en lodo
 constexpr qreal longitudRecorrido=1200.0;
-constexpr qreal ventanaDimensionador=100.0;
 constexpr qreal velocidadPerseguidor=24.0;
 constexpr qreal separacionInicial=35.0;
 constexpr qreal separacionMaxima=60.0;

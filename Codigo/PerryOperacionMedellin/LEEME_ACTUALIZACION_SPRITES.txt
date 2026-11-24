@@ -1,0 +1,27 @@
+HIPOPOTAMOS CON SPRITES Y ENTRADA AL NIVEL 2 CON F
+
+INSTALAR SOBRE LA ACTUALIZACION HACIENDA PASO 1
+1. Deten el juego.
+2. Copia todos los archivos y la carpeta imagenes dentro de
+   Codigo/PerryOperacionMedellin, reemplazando los archivos existentes.
+   Combina el contenido de imagenes: conserva perry.png.
+3. CMakeLists.txt ya incluye imagenes/hipopotamos.png. Espera a que Qt
+   reconfigure y ejecuta con Ctrl+R.
+
+CAMBIOS
+- Hipopotamos: sprite tranquilo, parpadeo, aviso amarillo y ondas sumergidas.
+- La hoja transparente se divide en cuatro celdas. Los recortes escalados
+  se preparan al construir y se comparten mediante QPixmapCache; no se
+  cargan archivos ni se recortan imagenes por fotograma.
+- Se conserva la superficie de salto, los ciclos y las tres vidas.
+- Carretera: al alcanzar o superar 1200 m se fija el contador en 1200,
+  se detienen los peligros y aparece el aviso de pulsar F.
+- Una pulsacion de F bloquea la entrada y cambia a la hacienda. No se
+  requiere F anticipada ni Enter. Pulsar antes o mantener F no salta niveles.
+- La senal de entrada se emite una sola vez y el cambio de escena es encolado.
+
+VALIDACION
+Compilado con Qt 6 en Linux. Recorrido completo del rio con tres vidas;
+reinicios, colisiones, sprites cargados y transicion verificados.
+Se probo la espera sin dano tras llegar, F anticipada, autorrepeticion,
+doble pulsacion y que Enter no active el nivel. Falta la prueba en Windows.

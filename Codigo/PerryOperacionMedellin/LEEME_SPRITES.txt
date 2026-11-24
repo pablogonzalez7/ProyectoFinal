@@ -1,0 +1,38 @@
+ACTUALIZACION VISUAL: POLICIAS, CARROS, BALA Y OBSTACULOS
+
+INSTALACION
+Requiere tener instalada la hacienda (hipopotamos y salto).
+Deten el juego. Copia TODO el contenido del ZIP dentro de
+Codigo/PerryOperacionMedellin y reemplaza los archivos existentes.
+Combina la carpeta imagenes con la actual: conserva perry.png.
+No crees clases manualmente; CMakeLists.txt registra recursossprites.cpp
+junto con todos los nuevos PNG. Deja que Qt reconfigure y pulsa Ctrl+R.
+Tambien se incluye la actualizacion anterior de hipopotamos y entrada con F.
+
+RECURSOS NUEVOS
+imagenes/policias.png: cuatro direcciones y dos poses. Los guardias de la
+casa cambian de direccion con su movimiento y alternan poses al caminar.
+imagenes/carro_perry.png: carro turquesa, visto desde arriba.
+imagenes/carro_policia.png: perseguidor blanco y negro con luces roja/azul.
+imagenes/bala.png: proyectil dorado, compartido por las balas reutilizadas.
+imagenes/barrera.png: barrera naranja. Tras chocar se ve semitransparente.
+imagenes/lodo.png: charco marron con huellas de ruedas.
+
+INTEGRACION Y EFICIENCIA
+RecursosSprites::cargar se invoca al construir los objetos. Encuentra el
+contenido visible del recurso, lo recorta y escala al tamano del juego.
+QPixmapCache comparte las variantes preparadas. paint solo dibuja los
+pixmaps; no abre archivos ni escala o recorta por fotograma.
+El ciclo del paso del policia depende de la distancia caminada; no necesita
+otro temporizador. Se conservan sus reglas de patrulla y persecucion.
+Se conservan las cajas de colision: guardia 32x40, carro 48x84, bala 8x14,
+barrera 96x56 y lodo 112x150. La colision continua siendo rectangular,
+incluidos los bordes transparentes del sprite dentro de esas cajas.
+No cambian velocidades, danos, rozamiento, vidas ni alcance de los guardias.
+A los 1200 metros, pulsa F una vez para entrar a la hacienda.
+
+VALIDACION
+Compilacion con Qt 6 en Linux, carga de los ocho PNG del juego y revision
+del renderizado de policias, carros, bala, barreras y lodo.
+Comprobadas las cajas de colision de personajes y vehiculos.
+Falta verificar esta actualizacion en tu Qt de Windows.

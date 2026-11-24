@@ -11,7 +11,7 @@ Deja que Qt Creator reconfigure CMake y ejecuta con Ctrl+R.
 CONTROLES Y REGLAS
 A/D: conducir lateralmente.
 E: escudo durante 1 segundo; despues espera 6 segundos para volver a usarlo.
-F: prepara el dimensionador cuando quedan 100 metros o menos.
+F: tras alcanzar 1200 metros, bloquea la entrada y abre el nivel 2 con una pulsacion.
 R: reinicia desde la casa.
 El recorrido mide 1200 metros. El enemigo apunta a una posicion fija,
 avisa con una linea durante 0.55 segundos y dispara; no corrige la bala
@@ -22,9 +22,9 @@ se reinicia automaticamente la casa, incluidas las llaves.
 Las barreras reducen la velocidad un 45 por ciento una vez por barrera.
 El lodo frena mientras se toca; fuera de el, el motor recupera velocidad.
 La perdida de velocidad permite al perseguidor acercarse.
-Al llegar, F debe haberse activado durante los ultimos 100 metros: bloquea
-la entrada. Si no se activo, los perseguidores dan la alarma y se pierde.
-La llegada es una pantalla provisional. El nivel de hipopotamos aun falta.
+Al llegar se detienen el carro y los peligros. Espera el tiempo que quieras
+y pulsa F una vez para entrar al nivel de hipopotamos. No se usa Enter.
+Pulsar F antes de llegar no activa ni almacena la transicion.
 
 FISICA Y AJUSTES
 configuracioncarretera.h contiene los valores en unidades SI.
@@ -51,5 +51,5 @@ VALIDACION
 Compilado con Qt 6 en Linux. Pruebas de escudo, recarga, tres impactos,
 captura por perdida de velocidad y senal unica de derrota.
 Recorrido completo simulado con obstaculos y disparos activos: comprobados
-los finales con y sin F, la reutilizacion de objetos y el regreso automatico
+la llegada sin F, la espera segura, la entrada con F, la reutilizacion y el regreso automatico
 a la casa. Falta ejecutar esta actualizacion en tu Qt de Windows.

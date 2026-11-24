@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFocusEvent>
 #include <QGraphicsRectItem>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsView>
 #include <QImage>
 #include <QKeyEvent>
@@ -61,7 +62,7 @@ void exigirCuerpoLibre(const Nivel &nivel, const QRectF &cuerpo)
 {
     exigir(nivel.sceneRect().contains(cuerpo), "Cuerpo fuera del mapa");
     for (QGraphicsItem *item : nivel.items()) {
-        if (item->zValue() == 3 && dynamic_cast<QGraphicsRectItem *>(item)) {
+        if (item->zValue() == 3 && (dynamic_cast<QGraphicsRectItem *>(item) || dynamic_cast<QGraphicsPixmapItem *>(item))) {
             exigir(!cuerpo.intersects(item->sceneBoundingRect()), "Un cuerpo entro en una pared o mueble");
         }
     }

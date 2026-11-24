@@ -1,0 +1,21 @@
+Recursos creados para el juego con la herramienta integrada de generacion
+ de imagenes. No se uso CLI/API. Los PNG originales conservan su transparencia.
+
+Indicaciones de generacion por recurso:
+policias.png: hoja pixel art 16-bit de 4 columnas y 2 filas con el mismo
+policia adulto de uniforme azul oscuro, gorra y botas, sin arma ni insignias.
+Columnas: frente, espalda, izquierda, derecha. Filas: quieto y paso al caminar.
+Figuras completas sobre dos piernas, misma escala, celdas separadas,
+fondo transparente y sin texto ni decoracion.
+carro_perry.png: carro compacto turquesa pixel art visto estrictamente desde
+arriba, frente hacia arriba, ventanas azules, llantas negras, luces delanteras
+amarillas y traseras rojas, aislado con transparencia, sin letras ni logos.
+carro_policia.png: carro perseguidor blanco y negro pixel art visto desde
+arriba, frente hacia arriba, ventanas azules, barra roja y azul, llantas
+negras, aislado sobre transparencia, sin letras ni logos.
+bala.png: proyectil dorado apuntando arriba, punta amarilla, cola naranja,
+contorno oscuro y pocos pixeles legibles al reducir a 8x14, sin arma ni fondo.
+barrera.png: barrera horizontal naranja con franjas diagonales crema,
+pixel art sencillo para carretera, objeto completo aislado y transparente.
+lodo.png: charco vertical irregular marron pixel art visto desde arriba,
+con brillos planos y huellas de ruedas, sin suelo ni objetos externos.

@@ -2,11 +2,14 @@
 #include "jugador.h"
 #include "llave.h"
 #include "villano.h"
+#include "recursossprites.h"
 
 #include <QBrush>
 #include <QColor>
 #include <QFont>
 #include <QGraphicsRectItem>
+#include <QGraphicsPixmapItem>
+#include <QImageReader>
 #include <QGraphicsSimpleTextItem>
 #include <QPen>
 #include <QtMath>
@@ -87,21 +90,47 @@ Nivel::Nivel(QObject *padre)
 
     const QStringList nombres = {"DORMITORIO", "SALA", "OFICINA / AUTO",
                                  "BODEGA / CASA", "COMEDOR", "GARAJE"};
+    // Una celda por habitacion. Las texturas se preparan al construir la escena.
+    const QString rutaPisos = ":/imagenes/pisos_casa.png";
+    const QSize hojaPisos = QImageReader(rutaPisos).size();
+    const int anchoCelda = hojaPisos.width()/3;
+    const int altoCelda = hojaPisos.height()/2;
     for (int i = 0; i < 6; ++i) {
         const int columna = i % 3;
         const int fila = i / 3;
-        auto *suelo = addRect(QRectF(20 + columna * 480, 20 + fila * 400, 440, 360),
-            QPen(Qt::NoPen), QBrush(i % 2 ? QColor(42, 48, 53) : QColor(37, 44, 49)));
+        auto *suelo = addPixmap(RecursosSprites::cargar(rutaPisos, QSize(480,400),
+            QRect(columna*anchoCelda,fila*altoCelda,anchoCelda,altoCelda)));
+        suelo->setPos(columna*480,fila*400);
         suelo->setZValue(-5);
-        auto *nombre = addSimpleText(nombres.at(i), QFont("Arial", 11));
-        nombre->setBrush(QColor(140, 157, 168));
+        suelo->setAcceptedMouseButtons(Qt::NoButton);
+        auto *nombre = addSimpleText(nombres.at(i), QFont("Arial", 11,QFont::Bold));
+        nombre->setBrush(QColor("#f4ead4"));
         nombre->setPos(35 + columna * 480, 30 + fila * 400);
-        nombre->setZValue(-4);
+        nombre->setZValue(-3);
+        auto *fondoNombre = addRect(nombre->sceneBoundingRect().adjusted(-6,-3,6,3),
+            QPen(Qt::NoPen), QBrush(QColor(25,32,35,220)));
+        fondoNombre->setZValue(-4);
     }
 
-    for (const QRectF &pared : paredes) {
-        auto *dibujo = addRect(pared, QPen(Qt::NoPen), QBrush(QColor(125, 135, 145)));
-        dibujo->setZValue(3);
+    const QString rutaMuebles = ":/imagenes/muebles_casa.png";
+    const QSize hojaMuebles = QImageReader(rutaMuebles).size();
+    const int anchoMueble = hojaMuebles.width()/3;
+    const int altoMueble = hojaMuebles.height()/3;
+    const int inicioMuebles = paredes.size()-9;
+    for (int i=0; i<paredes.size(); ++i) {
+        const QRectF &pared = paredes[i];
+        if (i<inicioMuebles) {
+            // Las paredes y sus huecos conservan exactamente la geometria fisica.
+            auto *dibujo = addRect(pared, QPen(Qt::NoPen), QBrush(QColor("#879181")));
+            dibujo->setZValue(3);
+        } else {
+            const int celda = i-inicioMuebles;
+            auto *mueble = addPixmap(RecursosSprites::cargar(rutaMuebles,pared.size().toSize(),
+                QRect((celda%3)*anchoMueble,(celda/3)*altoMueble,anchoMueble,altoMueble)));
+            mueble->setPos(pared.topLeft());
+            mueble->setZValue(3);
+            mueble->setAcceptedMouseButtons(Qt::NoButton);
+        }
     }
     prepararNavegacion();
 

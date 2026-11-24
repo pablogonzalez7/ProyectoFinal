@@ -20,12 +20,24 @@ public:
     void establecerDireccion(const QPointF &nuevaDireccion);
     void actualizar(qreal segundosTranscurridos) override;
 
+    // La misma clase Jugador funciona en vista superior y en plataformas.
+    void activarModoPlataformas();
+    void saltar();
+    void iniciarVuelo(const QPointF &velocidadInicial);
+    QPointF velocidadVueloActual() const;
+    void aterrizar(qreal alturaSuperficie);
+    void establecerEnSuelo(bool apoyado);
+    bool estaEnSuelo() const;
+    qreal velocidadVerticalActual() const;
+
     void alternarCamuflaje();
     void actualizarCamuflaje(qreal segundosReales);
     qreal segundosCamuflaje() const;
     void restablecer();
     bool estaCamuflado() const;
     qreal rapidezActual() const;
+
+    QRectF boundingRect() const override;
 
     void paint(QPainter *pintor,
                const QStyleOptionGraphicsItem *opciones,
@@ -49,6 +61,12 @@ private:
     void actualizarAnimacion(qreal segundosTranscurridos, bool caminando);
 
     QPointF direccion;
+    QPixmap fotogramasLaterales[2][3]; // Izquierda/derecha: quieto, paso y salto.
+    bool modoPlataformas = false;
+    bool enSuelo = false;
+    qreal velocidadVertical = 0.0;
+    qreal velocidadHorizontalVuelo = 0.0;
+    bool vueloInercial = false;
 
     // Referencia al nivel; el jugador no lo elimina.
     const Nivel *nivel;
