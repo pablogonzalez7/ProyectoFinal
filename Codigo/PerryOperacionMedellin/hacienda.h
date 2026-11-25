@@ -41,6 +41,7 @@ private:
     // Propiedad de QGraphicsScene; el vector solamente guarda referencias.
     vector<Plataforma *> plataformas;
     QPixmap texturaAgua;
+    QPixmap fondoPanoramico;
     qreal desplazamientoAgua = 0;
     array<Liana *,2> lianas{};
     Liana *lianaActual = nullptr;

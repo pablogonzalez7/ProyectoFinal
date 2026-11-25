@@ -38,8 +38,9 @@ signals:
     void estadoCambiado();
 
 private:
-    QPixmap sprites[4][2];
+    array<array<QPixmap, 2>, 4> sprites;
     qreal pasoAnimacion = 0;
+    void mostrarSpriteActual();
     QPointF centro() const;
     void cambiarEstado(Estado nuevoEstado);
     void comprobarJugador();

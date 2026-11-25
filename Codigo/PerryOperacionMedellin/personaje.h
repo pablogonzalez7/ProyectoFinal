@@ -2,6 +2,7 @@
 #define PERSONAJE_H
 
 #include <QGraphicsObject>
+#include <QGraphicsPixmapItem>
 
 using namespace std;
 
@@ -21,10 +22,16 @@ public:
                const QStyleOptionGraphicsItem *opciones,
                QWidget *widget) override;
 
+    QGraphicsPixmapItem *obtenerImagen() const;
+
     virtual void actualizar(qreal segundosTranscurridos) = 0;
 
 protected:
+    void mostrarFotograma(const QPixmap &fotograma);
     qreal velocidad;
+
+private:
+    QGraphicsPixmapItem *imagen;
 };
 
 #endif // PERSONAJE_H

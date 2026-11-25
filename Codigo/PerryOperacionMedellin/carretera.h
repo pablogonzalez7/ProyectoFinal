@@ -2,6 +2,7 @@
 #define CARRETERA_H
 #include <QGraphicsScene>
 #include <QString>
+#include <QPixmap>
 #include <QRandomGenerator>
 #include <array>
 #include "configuracioncarretera.h"
@@ -44,6 +45,8 @@ private:
     Vehiculo *vehiculo; // Lo libera la escena.
     QRectF calzada{240,0,480,540};
     qreal desplazamiento=0, distancia=0;
+    QPixmap texturaAsfalto, texturaLlano;
+    qreal desplazamientoTextura=0;
     int ultimoMetro=-1;
     array<Obstaculo *,ConfiguracionCarretera::cantidadObstaculos> obstaculos{};
     QRandomGenerator aleatorio{21};

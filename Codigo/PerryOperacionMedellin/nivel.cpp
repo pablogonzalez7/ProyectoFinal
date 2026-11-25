@@ -67,7 +67,9 @@ bool cortaRectangulo(const QPointF &a, const QPointF &b,
 
 Nivel::Nivel(QObject *padre)
     : QGraphicsScene(padre)
-    , paredes{
+{
+    // Geometria usada una sola vez para construir la escena original.
+    const QList<QRectF> paredes{
         // Seis habitaciones. Puertas de 100 px: cabe el cuerpo completo.
         QRectF(0, 0, 1440, 20), QRectF(0, 780, 1440, 20),
         QRectF(0, 20, 20, 760), QRectF(1420, 20, 20, 760),
@@ -83,8 +85,8 @@ Nivel::Nivel(QObject *padre)
         QRectF(580, 520, 120, 80), QRectF(800, 640, 60, 80),
         QRectF(1100, 160, 80, 120), QRectF(1040, 520, 100, 80),
         QRectF(1260, 580, 80, 80)
-    }
-{
+    };
+    obstaculos.reserve(paredes.size());
     setSceneRect(0, 0, ConfiguracionCasa::ancho, ConfiguracionCasa::alto);
     setBackgroundBrush(QBrush(QColor(35, 40, 45)));
 
@@ -123,12 +125,15 @@ Nivel::Nivel(QObject *padre)
             // Las paredes y sus huecos conservan exactamente la geometria fisica.
             auto *dibujo = addRect(pared, QPen(Qt::NoPen), QBrush(QColor("#879181")));
             dibujo->setZValue(3);
+            obstaculos.append(dibujo);
         } else {
             const int celda = i-inicioMuebles;
             auto *mueble = addPixmap(RecursosSprites::cargar(rutaMuebles,pared.size().toSize(),
                 QRect((celda%3)*anchoMueble,(celda/3)*altoMueble,anchoMueble,altoMueble)));
             mueble->setPos(pared.topLeft());
             mueble->setZValue(3);
+            mueble->setShapeMode(QGraphicsPixmapItem::MaskShape);
+            obstaculos.append(mueble);
             mueble->setAcceptedMouseButtons(Qt::NoButton);
         }
     }
@@ -152,7 +157,7 @@ Nivel::Nivel(QObject *padre)
     jugador = new Jugador(this);
     addItem(jugador);
     jugador->setZValue(4);
-    connect(jugador, &Jugador::camuflajeCambiado, this, &Nivel::marcarInformacion);
+    connect(jugador, SIGNAL(camuflajeCambiado(bool)), this, SLOT(marcarInformacion()));
 
     const QList<QList<QPointF>> recorridos = {
         {QPointF(220, 660), QPointF(60, 660), QPointF(220, 740), QPointF(420, 660)},
@@ -166,7 +171,7 @@ Nivel::Nivel(QObject *padre)
         addItem(guardia);
         guardia->setZValue(1);
         guardias.append(guardia);
-        connect(guardia, &Villano::estadoCambiado, this, &Nivel::marcarInformacion);
+        connect(guardia, SIGNAL(estadoCambiado()), this, SLOT(marcarInformacion()));
     }
 
     panelAviso = addRect(QRectF(0, 0, 480, 135), QPen(Qt::NoPen),
@@ -257,11 +262,10 @@ void Nivel::mostrarAviso()
 
 void Nivel::actualizarObjetivos(qreal segundos, bool seMovio)
 {
-    const QRectF cuerpo = jugador->sceneBoundingRect();
     int candidata = -1;
     if (!jugador->estaCamuflado() && !seMovio) {
         for (int i = 0; i < static_cast<int>(llaves.size()); ++i) {
-            if (!llaves[i]->estaRecogida() && cuerpo.intersects(llaves[i]->sceneBoundingRect())) {
+            if (!llaves[i]->estaRecogida() && jugador->collidesWithItem(llaves[i], Qt::IntersectsItemBoundingRect)) {
                 candidata = i;
                 break;
             }
@@ -289,7 +293,7 @@ void Nivel::actualizarObjetivos(qreal segundos, bool seMovio)
     }
     if (llavesRecogidas == 2) {
         iniciarAlarma();
-        if (cuerpo.intersects(puerta->sceneBoundingRect())) {
+        if (jugador->collidesWithItem(puerta, Qt::IntersectsItemBoundingRect)) {
             estado = Completado;
             jugador->establecerDireccion(QPointF());
             jugador->actualizar(0.0);
@@ -345,7 +349,7 @@ void Nivel::actualizar(qreal segundosReales)
         for (Villano *guardia : guardias) {
             guardia->actualizar(paso);
             if (!jugador->estaCamuflado()
-                && jugador->sceneBoundingRect().intersects(guardia->sceneBoundingRect())) {
+                && jugador->collidesWithItem(guardia, Qt::IntersectsItemBoundingRect)) {
                 perder("Te atraparon!");
                 break;
             }
@@ -397,7 +401,8 @@ void Nivel::actualizarIndicador()
 
 bool Nivel::hayLineaDeVision(const QPointF &origen, const QPointF &destino) const
 {
-    for (const QRectF &pared : paredes) {
+    for (QGraphicsItem *obstaculo : obstaculos) {
+        const QRectF pared = obstaculo->sceneBoundingRect();
         if (cortaRectangulo(origen, destino, pared)) {
             return false;
         }
@@ -408,7 +413,8 @@ bool Nivel::hayLineaDeVision(const QPointF &origen, const QPointF &destino) cons
 QPointF Nivel::recortarRayo(const QPointF &origen, const QPointF &destino) const
 {
     qreal limite = 1.0;
-    for (const QRectF &pared : paredes) {
+    for (QGraphicsItem *obstaculo : obstaculos) {
+        const QRectF pared = obstaculo->sceneBoundingRect();
         qreal entrada = 0.0;
         if (cortaRectangulo(origen, destino, pared, &entrada)) {
             limite = qMin(limite, entrada);
@@ -421,7 +427,8 @@ bool Nivel::caminoLibre(const QPointF &origen, const QPointF &destino) const
 {
     // Expandir paredes equivale a mover el centro de un cuerpo de 32 x 40.
     // El margen minimo permite rozar una pared sin penetrarla.
-    for (const QRectF &pared : paredes) {
+    for (QGraphicsItem *obstaculo : obstaculos) {
+        const QRectF pared = obstaculo->sceneBoundingRect();
         const QRectF expandida = pared.adjusted(-15.999, -19.999, 15.999, 19.999);
         if (cortaRectangulo(origen, destino, expandida)) {
             return false;
@@ -440,7 +447,8 @@ void Nivel::prepararNavegacion()
                                   (fila + 0.5) * tamanoCelda);
             const QRectF cuerpo(nodo.centro - QPointF(16, 20), QSizeF(32, 40));
             nodo.libre = sceneRect().contains(cuerpo);
-            for (const QRectF &pared : paredes) {
+            for (QGraphicsItem *obstaculo : obstaculos) {
+                const QRectF pared = obstaculo->sceneBoundingRect();
                 if (cuerpo.intersects(pared)) {
                     nodo.libre = false;
                     break;
@@ -529,41 +537,45 @@ void Nivel::calcularRuta(const QPointF &origen, const QPointF &destino,
     resultado.append(destino);
 }
 
-QPointF Nivel::limitarDesplazamiento(const QRectF &cuerpo,
-                                    const QPointF &desplazamiento) const
+const QList<QGraphicsItem *> &Nivel::obtenerObstaculos() const { return obstaculos; }
+
+bool Nivel::hayChoque(Personaje *personaje) const
 {
-    const QRectF limites = sceneRect();
-    const qreal movimientoX = desplazamiento.x();
-    const qreal movimientoY = desplazamiento.y();
-    qreal nuevaX = qBound(limites.left(), cuerpo.left() + movimientoX,
-                         limites.right() - cuerpo.width());
-    if (movimientoX != 0.0) {
-        for (const QRectF &pared : paredes) {
-            if (cuerpo.bottom() <= pared.top() || cuerpo.top() >= pared.bottom()) {
-                continue;
-            }
-            if (movimientoX > 0.0 && cuerpo.right() <= pared.left()) {
-                nuevaX = qMin(nuevaX, pared.left() - cuerpo.width());
-            } else if (movimientoX < 0.0 && cuerpo.left() >= pared.right()) {
-                nuevaX = qMax(nuevaX, pared.right());
+    for (int i = 0; i < obstaculos.size(); ++i) {
+        // Paredes: cuerpo estable. Muebles: silueta visible de ambos sprites.
+        QGraphicsItem *cuerpo = personaje;
+        if (i >= cantidadParedes) cuerpo = personaje->obtenerImagen();
+        if (cuerpo->collidesWithItem(obstaculos.at(i))) return true;
+    }
+    return false;
+}
+
+QPointF Nivel::moverPersonaje(Personaje *personaje, const QPointF &desplazamiento) const
+{
+    const QPointF inicio = personaje->pos();
+    const int pasos = qMax(1, qCeil(qMax(qAbs(desplazamiento.x()),
+                                        qAbs(desplazamiento.y())) / 4.0));
+    const QPointF paso = desplazamiento / pasos;
+    // Separar X e Y permite deslizarse a lo largo de una pared.
+    for (int numero = 0; numero < pasos; ++numero) {
+        for (int eje = 0; eje < 2; ++eje) {
+            const QPointF avance = eje == 0 ? QPointF(paso.x(),0) : QPointF(0,paso.y());
+            if (avance.isNull()) continue;
+            const QPointF anterior = personaje->pos();
+            personaje->setPos(anterior + avance);
+            if (hayChoque(personaje)) {
+                // Acercarse al contacto sin dejar un salto visible de varios pixeles.
+                qreal libre = 0.0;
+                qreal ocupado = 1.0;
+                for (int ajuste = 0; ajuste < 7; ++ajuste) {
+                    const qreal medio = (libre + ocupado) / 2.0;
+                    personaje->setPos(anterior + avance * medio);
+                    if (hayChoque(personaje)) ocupado = medio;
+                    else libre = medio;
+                }
+                personaje->setPos(anterior + avance * libre);
             }
         }
     }
-    QRectF horizontal = cuerpo;
-    horizontal.moveLeft(nuevaX);
-    qreal nuevaY = qBound(limites.top(), cuerpo.top() + movimientoY,
-                         limites.bottom() - cuerpo.height());
-    if (movimientoY != 0.0) {
-        for (const QRectF &pared : paredes) {
-            if (horizontal.right() <= pared.left() || horizontal.left() >= pared.right()) {
-                continue;
-            }
-            if (movimientoY > 0.0 && horizontal.bottom() <= pared.top()) {
-                nuevaY = qMin(nuevaY, pared.top() - cuerpo.height());
-            } else if (movimientoY < 0.0 && horizontal.top() >= pared.bottom()) {
-                nuevaY = qMax(nuevaY, pared.bottom());
-            }
-        }
-    }
-    return QPointF(nuevaX - cuerpo.left(), nuevaY - cuerpo.top());
+    return personaje->pos() - inicio;
 }

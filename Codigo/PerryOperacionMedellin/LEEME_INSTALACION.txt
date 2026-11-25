@@ -1,0 +1,35 @@
+ACTUALIZACION DE PAISAJES - PERRY OPERACION MEDELLIN
+
+INCLUYE la actualizacion anterior de codigo Qt y margenes de colision.
+Puedes instalar este ZIP sobre la version de Cristian 5ad484b o sobre la
+actualizacion Codigo_Qt_y_Colisiones. No instales el ZIP anterior despues.
+Es un parche: necesita los demas archivos e imagenes del proyecto existente.
+
+1. Guarda todo en Qt Creator y cierra el juego.
+2. Conserva una copia de tu carpeta actual fuera del repositorio.
+3. Extrae este ZIP y abre la carpeta PerryOperacionMedellin que contiene.
+4. Copia SU CONTENIDO en tu carpeta actual:
+   C:\Users\Usuario\Proyectos\ProyectoFinal\Codigo\PerryOperacionMedellin
+   (la carpeta donde ya estan CMakeLists.txt y mainwindow.cpp).
+5. Acepta reemplazar archivos y combinar las carpetas imagenes y pruebas.
+   No borres imagenes/; los nuevos PNG se agregan a los anteriores.
+   No crees una segunda carpeta PerryOperacionMedellin dentro de la actual.
+6. En Qt Creator acepta recargar los archivos y deja terminar CMake.
+   Si no se actualiza, usa Build > Run CMake. Luego pulsa Ctrl+R.
+
+QUE VERAS
+Carretera con asfalto y pasto en los dos costados, moviendose con el carro.
+Hacienda con cielo, nubes, sol y palmeras altas con cocos de fondo.
+El panorama cubre la vista durante todo el recorrido, detras del agua y piso.
+Las indicaciones llevan placas claras para poder leerlas.
+Las palmeras son decorativas: no son obstaculos ni plataformas.
+No se modificaron las fisicas, distancias, controles ni ubicaciones del mapa.
+
+VERIFICACION EN TU PC
+Juega desde la casa hasta la carretera. Revisa el desplazamiento del fondo.
+Al llegar a 1200 metros pulsa F una vez y entra al nivel dos.
+Comprueba el panorama al avanzar hasta la zona de las lianas.
+Compilado y revisado en Linux con Qt 6; falta la comprobacion en tu Windows.
+
+Consulta NOTAS_PAISAJES.txt para los detalles de reutilizacion y memoria.
+Las capturas en Vista_previa muestran el escenario integrado en el juego.

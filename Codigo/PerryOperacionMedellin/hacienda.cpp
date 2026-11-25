@@ -6,7 +6,7 @@
 #include "configuracionhacienda.h"
 #include "recursossprites.h"
 #include <QPainter>
-#include <QLinearGradient>
+#include <QGraphicsView>
 #include <QFont>
 #include <cmath>
 using namespace std;
@@ -15,20 +15,24 @@ using namespace ConfiguracionHacienda;
 Hacienda::Hacienda(QObject *padre) : QGraphicsScene(padre), jugador(new Jugador(nullptr))
 {
     texturaAgua = RecursosSprites::cargar(":/imagenes/agua_hacienda.png",QSize(384,96));
+    fondoPanoramico = RecursosSprites::cargar(":/imagenes/panorama_hacienda.png",QSize(1620,540));
     setSceneRect(0, 0, anchoMapa, 540);
     plataformas.reserve(14);
     const auto agregar = [this](Plataforma *p) { plataformas.push_back(p); addItem(p); };
+    // En el sprite, la linea del agua queda 32 px debajo del lomo.
+    // Todos comparten la misma altura del rio; el apoyo baja con el dibujo.
+    const qreal alturaLomo = alturaAgua - 32.0;
     agregar(new Plataforma(0, 420, 300));
-    agregar(new Hipopotamo(400, 415, 0));
-    agregar(new Hipopotamo(590, 400, 7.7));
-    agregar(new Hipopotamo(780, 420, 6.9));
+    agregar(new Hipopotamo(400, alturaLomo, 0));
+    agregar(new Hipopotamo(590, alturaLomo, 7.7));
+    agregar(new Hipopotamo(780, alturaLomo, 6.9));
     agregar(new Plataforma(990, 420, 260));
-    agregar(new Hipopotamo(1380, 415, 0.4));
-    agregar(new Hipopotamo(1580, 400, 8.1));
-    agregar(new Hipopotamo(1790, 420, 7.3));
+    agregar(new Hipopotamo(1380, alturaLomo, 0.4));
+    agregar(new Hipopotamo(1580, alturaLomo, 8.1));
+    agregar(new Hipopotamo(1790, alturaLomo, 7.3));
     agregar(new Plataforma(2010, 420, 240));
-    agregar(new Hipopotamo(2370, 415, 0.8));
-    agregar(new Hipopotamo(2560, 420, 0.0));
+    agregar(new Hipopotamo(2370, alturaLomo, 0.8));
+    agregar(new Hipopotamo(2560, alturaLomo, 0.0));
     agregar(new Plataforma(2780, 420, 320));
     agregar(new Plataforma(3460, 420, 260));
     agregar(new Plataforma(4080, 420, 400));
@@ -140,9 +144,11 @@ void Hacienda::actualizarPaso(qreal dt)
     jugador->actualizar(dt);
     jugador->setX(qBound(qreal(0), jugador->x(), anchoMapa - anterior.width()));
     QRectF actual = jugador->sceneBoundingRect();
+    // El centro de los pies debe seguir encima; la cola no sostiene a Perry.
+    const qreal centroPies = actual.center().x();
     if (apoyo) {
         const QRectF r = apoyo->superficie();
-        if (actual.right() <= r.left() || actual.left() >= r.right()) {
+        if (centroPies <= r.left() || centroPies >= r.right()) {
             apoyo = nullptr;
             jugador->establecerEnSuelo(false);
         }
@@ -153,7 +159,7 @@ void Hacienda::actualizarPaso(qreal dt)
         for (auto *p : plataformas) {
             if (!p->permiteApoyo()) continue;
             const QRectF r = p->superficie();
-            if (actual.right() <= r.left() || actual.left() >= r.right()) continue;
+            if (centroPies <= r.left() || centroPies >= r.right()) continue;
             // Solo se aterriza descendiendo desde arriba; no se pega a los laterales.
             if (anterior.bottom() <= r.top() + 0.01 && actual.bottom() >= r.top()
                 && r.top() < altura) { aterrizaje = p; altura = r.top(); }
@@ -200,7 +206,7 @@ void Hacienda::perderVida()
 QString Hacienda::informacionActual() const
 {
     if (estado == Completado)
-        return "Lianas superadas! Llegaste a la entrada vigilada.\nAqui termina la version actual; el combate con los guardias sigue pendiente.";
+        return "Lianas superadas! Llegaste a la entrada vigilada.\nPreparando el encuentro con los dos escoltas...";
     if (estado == Recuperando)
         return vidas ? QString("Caiste al agua. Vidas: %1/3\nVolveras a la ultima orilla segura.").arg(vidas)
                      : "Sin vidas. Reiniciando desde la entrada de la hacienda...";
@@ -225,16 +231,21 @@ int Hacienda::vidasRestantes() const { return vidas; }
 
 void Hacienda::drawBackground(QPainter *p, const QRectF &rect)
 {
-    QLinearGradient cielo(0, 0, 0, 465);
-    cielo.setColorAt(0, QColor("#aedbd5")); cielo.setColorAt(1, QColor("#e7edc2"));
-    p->fillRect(rect, cielo);
-    p->setPen(Qt::NoPen);
-    // Dibuja solamente la region visible, sin crear objetos nuevos por fotograma.
-    const int comienzo = int(rect.left() / 170) * 170;
-    for (int x = comienzo; x < rect.right() + 170; x += 170) {
-        p->setBrush(QColor("#7fae8a")); p->drawEllipse(QRectF(x - 80, 220, 260, 230));
-        p->setBrush(QColor("#4e806c")); p->drawEllipse(QRectF(x, 290, 180, 180));
+    // El panorama se desplaza mas despacio que Perry (paralaje).
+    // Usamos la vista completa: una repintada parcial no mueve el fondo.
+    QRectF zonaVisible = rect;
+    if (!views().isEmpty()) {
+        QGraphicsView *vista = views().first();
+        zonaVisible = vista->mapToScene(vista->viewport()->rect()).boundingRect();
     }
+    const qreal anchoVisible = qMin(sceneRect().width(), zonaVisible.width());
+    const qreal recorridoCamara = qMax(qreal(0), sceneRect().width()-anchoVisible);
+    const qreal inicio = qBound(qreal(0), zonaVisible.left(), recorridoCamara);
+    const qreal anchoFondo = qMax(qreal(fondoPanoramico.width()), anchoVisible);
+    const qreal proporcion = recorridoCamara>0 ? inicio/recorridoCamara : 0;
+    const qreal desplazamientoFondo = proporcion*(anchoFondo-anchoVisible);
+    p->drawPixmap(QRectF(inicio-desplazamientoFondo,0,anchoFondo,540),
+                  fondoPanoramico,QRectF(fondoPanoramico.rect()));
     const QRectF zonaAgua = rect.intersected(QRectF(0,alturaAgua,anchoMapa,75));
     if (!zonaAgua.isEmpty()) {
         p->drawTiledPixmap(zonaAgua,texturaAgua,
@@ -250,11 +261,18 @@ void Hacienda::drawBackground(QPainter *p, const QRectF &rect)
     }
     p->setFont(QFont("Arial", 12, QFont::Bold));
     p->setPen(QColor("#244e49"));
+    // Placas claras para leer las indicaciones sobre el paisaje.
+    p->fillRect(QRectF(40, 280, 245, 85), QColor(255,249,222,210));
     p->drawText(QRectF(40, 280, 245, 85), Qt::AlignCenter, "ENTRADA A LA HACIENDA\nA/D + ESPACIO");
+    p->fillRect(QRectF(990, 300, 260, 70), QColor(255,249,222,210));
     p->drawText(QRectF(990, 300, 260, 70), Qt::AlignCenter, "ORILLA SEGURA");
+    p->fillRect(QRectF(2010, 300, 240, 70), QColor(255,249,222,210));
     p->drawText(QRectF(2010, 300, 240, 70), Qt::AlignCenter, "ORILLA SEGURA");
+    p->fillRect(QRectF(3460, 285, 260, 85), QColor(255,249,222,210));
     p->drawText(QRectF(3460, 285, 260, 85), Qt::AlignCenter, "ORILLA SEGURA\nOtra liana adelante");
+    p->fillRect(QRectF(4110, 285, 320, 85), QColor(255,249,222,210));
     p->drawText(QRectF(4110, 285, 320, 85), Qt::AlignCenter, "ENTRADA VIGILADA");
+    p->fillRect(QRectF(2790, 285, 290, 85), QColor(255,249,222,210));
     p->drawText(QRectF(2790, 285, 290, 85), Qt::AlignCenter, "LIANAS\nManten E + salta");
 }
 

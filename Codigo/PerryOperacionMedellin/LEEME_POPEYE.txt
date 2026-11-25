@@ -1,0 +1,93 @@
+COMBATE CONTRA POPEYE — 25 de noviembre de 2026
+
+COMO LLEGAR
+Completa la casa, recorre la carretera y pulsa F una vez al llegar a 1200 m.
+Cruza el rio y las dos lianas. En la entrada, transforma a Perry con C y
+vence a los dos escoltas con patadas a la cabeza. Ya en el suelo, acercate
+al porton de la derecha y pulsa F. Se abre la arena del jefe.
+Esta actualizacion incluye las anteriores; instalala al final.
+
+CONTROLES DEL COMBATE
+A/D: moverse. ESPACIO: saltar. Mouse: apuntar. Clic izquierdo: un disparo.
+Cada disparo conserva su direccion inicial; hay un segundo entre disparos.
+F: puno en suelo (1 punto) o patada en aire (2 puntos). Un golpe solo puede
+contar una vez. Se requiere una nueva pulsacion; mantener F no repite.
+Recarga del golpe: 1 s, reducida a 0.75 s durante la superagilidad.
+E: escudo de 1 s, con recarga de 6 s desde su activacion.
+Q: superagilidad durante 10 s, seguida de fatiga durante 10 s.
+La superagilidad aumenta la velocidad horizontal y ralentiza los proyectiles
+enemigos un 20%; no aumenta la altura de salto. La siguiente activacion
+queda disponible 30 s despues de terminar el efecto (40 s desde su inicio).
+R: repetir combate. Si ya perdiste, regresa al inicio de la hacienda.
+
+Perry tiene cinco corazones, con 0.9 s de proteccion tras recibir un impacto.
+Popeye tiene 30 puntos de resistencia. Estos son valores de balance inicial.
+Puedes golpearlo durante sus saltos: no se vuelve invulnerable ni se teletransporta.
+Las plataformas se atraviesan al subir y sostienen a los personajes al bajar.
+Una advertencia visible y el aviso sonoro del sistema anticipan el disparo
+oscilatorio. Este aviso depende de que el sistema tenga sonido habilitado.
+La onda empieza en su punto mas bajo y oscila hacia arriba para no desaparecer
+contra el suelo inmediatamente al dispararla. Las plataformas bloquean balas.
+
+AL GANAR O PERDER
+Al vencer, Popeye queda incapacitado y se anuncia la recuperacion del
+dimensionador. R permite repetir. El desenlace con Escobar aun NO esta hecho.
+Al perder, vuelves al inicio de la hacienda, sin repetir casa y carretera.
+Al terminar la pelea, los personajes que estaban en el aire aterrizan.
+
+CODIGO Y APRENDIZAJE
+ArenaPopeye hereda QGraphicsScene. Popeye reutiliza la clase Personaje y su
+QGraphicsPixmapItem hijo. El mismo QTimer de MainWindow llama al slot
+moverFigura(); no se crea un temporizador por bala ni por enemigo.
+Las conexiones de la ventana usan SIGNAL/SLOT, como los ejemplos de clase.
+Las colisiones de balas y golpes utilizan collidesWithItem y la silueta del
+sprite. El apoyo de pies y los saltos se calculan con posiciones y gravedad.
+
+Popeye separa percibir(), razonar(), actuar() y aprender(). Solo observa
+posiciones y resultados; no lee las teclas ni los temporizadores de habilidades.
+Aprende preferencias de disparo directo, superior e inferior por distancia.
+La estimacion es (aciertos + 1)/(intentos + 2), combinada con las cinco
+respuestas verticales observadas mas recientes. Aproximadamente el 80% de
+las decisiones aprovechan la mejor opcion y el 20% exploran.
+Tambien busca distancias que hayan producido mejores resultados.
+
+Cada ProyectilCombate conserva identificador, ataque, distancia inicial y
+respuesta observada tras 0.4 s. Al terminar, el resultado se atribuye a ese
+disparo, aunque Popeye ya haya lanzado otro. Escudo e inmunidad cuentan
+como bloqueos, separados de las evasiones y de las estadisticas de punteria.
+El ataque oscilatorio tiene recarga fija y no participa en el aprendizaje.
+
+Cambiar de plataforma al recibir dano, acercarse tras cuatro fallos de cinco
+y retirarse tras dano alto son REGLAS FIJAS, no aprendizaje por si mismas.
+La retirada dura como maximo 4 s y no se puede encadenar sin esperar 3 s.
+La memoria aprendida se borra al repetir el combate.
+
+MEMORIA Y REUTILIZACION
+Se crean 24 proyectiles enemigos y 8 del jugador una sola vez. Se buscan
+posiciones libres en esos arrays; activar/desactivar evita new/delete al disparar.
+Los historiales estan limitados: cinco respuestas, cinco resultados, 64 IDs
+y 32 eventos recientes de dano. Las estadisticas ocupan dos matrices 3x3.
+Los fotogramas y sus versiones invertidas se preparan al construir a Popeye;
+no se cargan archivos ni se recortan imagenes en cada cuadro.
+MainWindow es propietario QObject de la arena. QGraphicsScene libera sus
+items; cada personaje libera su sprite hijo. Los contenedores de apuntadores
+no vuelven a eliminarlos. Al reintentar se conservan y restablecen los objetos.
+Las escenas ya creadas se mantienen para reintentos durante la partida;
+se liberan al cerrar la ventana. No hay asignaciones de proyectiles en el bucle.
+
+VALIDACION
+Compilacion C++17 con Qt 6 en Linux y pruebas automaticas:
+- Aprendizaje, resultados fuera de orden, bloqueos y limite de retirada.
+- Saltos alcanzables, dano en vuelo y trayectorias sin perseguir al jugador.
+- Duraciones de habilidades, un impacto por golpe y limite de disparos.
+- Combate completo con controles publicos, sin editar salud ni posiciones.
+- Victoria, derrota unica y cien reinicios con los mismos objetos.
+- Ventana: porton -> arena, clic, teclado, R y retorno a la hacienda.
+- Regresiones de casa, carretera, rio, lianas, escoltas y margenes de colision.
+Falta probar esta version en Qt Creator/MinGW de Windows y ajustar dificultad
+con partidas humanas. Una prueba automatica no sustituye esa comprobacion.
+
+PENDIENTE
+Desenlace con Escobar, musica/efectos propios, revision final del entregable
+y grabacion. Los LEEME anteriores describen sus respectivas etapas; este
+archivo actualiza el estado del combate contra Popeye.

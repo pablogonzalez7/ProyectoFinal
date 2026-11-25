@@ -61,7 +61,7 @@ int main(int argc,char **argv) {
   hip.reiniciar(); exigir(hip.faseActual()==0,"Fase no reinicia");
   cout<<"OK aviso, inmersion y ciclo de hipopotamo"<<endl;
   h.reiniciar(); j->setPos(440,320); j->establecerEnSuelo(false); avanzar(h,0.5);
-  exigir(j->estaEnSuelo() && abs(j->sceneBoundingRect().bottom()-415)<0.001,"No aterriza en hipopotamo");
+  exigir(j->estaEnSuelo() && abs(j->sceneBoundingRect().bottom()-h.obtenerPlataformas()[1]->superficie().top())<0.001,"No aterriza en hipopotamo");
   auto *primero=dynamic_cast<Hipopotamo *>(h.obtenerPlataformas()[1]);
   primero->actualizar(5.6-primero->faseActual()); h.actualizar(paso);
   exigir(!j->estaEnSuelo(),"Flota cuando se hunde hipopotamo");

@@ -1,0 +1,52 @@
+ENTRADA VIGILADA - DESPUES DE LAS DOS LIANAS
+
+Se conecta automaticamente al llegar al final del recorrido de la hacienda.
+Perry aparece sin sombrero. Dos escoltas se acercan lentamente y aun no disparan.
+A/D mueve; ESPACIO salta; C transforma; F da la patada durante el salto.
+C sorprende a los dos durante tres segundos, una sola vez por intento.
+En este encuentro C NO es el camuflaje de cuatro segundos de la casa.
+
+Solo una patada en el aire que alcance la cabeza deja inconsciente al escolta.
+Acercate, salta y pulsa F cuando tus pies esten a la altura de su cabeza.
+Una pulsacion permite una patada, con recarga de 0.45 s; mantener F no repite.
+Los golpes al cuerpo y los golpes desde el suelo no incapacitan.
+Tras la sorpresa disparan horizontalmente cada 1.5 s. El segundo escolta
+comienza un poco despues para que los dos no disparen siempre juntos.
+Salta para esquivar. Hay tres corazones y 0.9 s de proteccion tras un impacto.
+
+Al vencer a ambos, ve al porton de la derecha y pulsa F desde el suelo.
+La entrada queda superada y ahora conecta con el combate contra Popeye.
+Consulta LEEME_POPEYE.txt para sus controles y habilidades.
+Tres impactos te devuelven al inicio de la hacienda (rio e hipopotamos).
+R reintenta el encuentro; si ya perdiste, regresa al inicio de la hacienda.
+
+CLASES Y EFICIENCIA
+EntradaHacienda es una QGraphicsScene, propiedad de MainWindow.
+GuardiaEntrada hereda Personaje y utiliza QGraphicsPixmapItem para su imagen.
+Se reutilizan Jugador, Proyectil, RecursosSprites, los sprites y el temporizador.
+El mismo QTimer emite timeout() hacia el slot moverFigura() de MainWindow.
+Las transiciones se conectan mediante SIGNAL/SLOT y conexion encolada para
+cambiar de escena cuando termina la actualizacion actual.
+
+array<GuardiaEntrada *,2> contiene los dos escoltas.
+array<Proyectil *,12> contiene las balas, creadas una sola vez.
+Una bala se activa, mueve y desactiva; no se hace new/delete por disparo.
+Reiniciar restablece los mismos objetos. La escena elimina sus items al cerrarse.
+La cabeza es un QGraphicsRectItem hijo del guardia; el area de patada es un
+QGraphicsRectItem hijo de Perry. Se comprueba collidesWithItem, como en clase.
+Son zonas invisibles para colision; los personajes se dibujan con sus sprites.
+Las balas comprueban la silueta del QGraphicsPixmapItem de Perry.
+Los fotogramas se preparan al construir los objetos, no en paint().
+Los escoltas siguen reglas fijas, sin aprendizaje. El agente que aprendera
+pertenece al combate contra Popeye (implementado en la actualizacion siguiente).
+
+VALIDACION EN LINUX CON QT 6
+- Disfraz sin ataques; sorpresa unica de tres segundos.
+- Disparos horizontales; suelo y torso no incapacitan.
+- Recorrido automatico con movimiento/salto/patada, sin teletransportar:
+  ambos escoltas vencidos, porton abierto y tres corazones conservados.
+- Golpes simultaneos no gastan varios corazones; derrota se emite una vez.
+- Cien reinicios conservan el numero de objetos y los mismos apuntadores.
+- Ventana real: transicion desde hacienda, C, espacio, R, retorno tras derrota.
+- Recorrido del rio y dos lianas; 12 pruebas anteriores de la casa aprobadas.
+Falta comprobarlo en el Qt Creator de Windows del equipo.

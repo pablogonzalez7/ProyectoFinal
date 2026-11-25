@@ -20,6 +20,7 @@ Jugador::Jugador(const Nivel *nivelActual)
     , nivel(nivelActual)
 {
     cargarSprites();
+    mostrarSpriteActual();
 }
 
 void Jugador::cargarSprites()
@@ -77,6 +78,14 @@ void Jugador::cargarSprites()
             .transformed(QTransform().scale(-1, 1));
     }
 
+    disfrazLateral[0] = hoja.copy(QRect(750,746,208,144))
+        .scaled(QSize(56,38),Qt::KeepAspectRatio,Qt::FastTransformation);
+    disfrazLateral[1] = hoja.copy(QRect(1023,746,208,144))
+        .scaled(QSize(56,38),Qt::KeepAspectRatio,Qt::FastTransformation);
+    patadaLateral[1] = hoja.copy(QRect(1015,895,220,168))
+        .scaled(QSize(64,44),Qt::KeepAspectRatio,Qt::FastTransformation);
+    patadaLateral[0] = patadaLateral[1].transformed(QTransform().scale(-1,1));
+
     // Quinta fila: cuatro apariencias sin sombrero (no es un ciclo de pasos).
     const QRect recortesCamuflados[cantidadDirecciones] = {
         QRect(244, 716, 128, 176), QRect(515, 716, 128, 176),
@@ -97,6 +106,7 @@ void Jugador::alternarCamuflaje()
                          : ConfiguracionCasa::rapidezJugador;
     fotogramaActual = 0;
     tiempoAnimacion = 0.0;
+    mostrarSpriteActual();
     update();
     emit camuflajeCambiado(camuflado);
 }
@@ -117,6 +127,8 @@ qreal Jugador::segundosCamuflaje() const { return tiempoCamuflaje; }
 void Jugador::restablecer()
 {
     direccion = QPointF();
+    disfrazEntrada = false;
+    tiempoPatada = 0;
     velocidadVertical = 0;
     velocidadHorizontalVuelo = 0;
     vueloInercial = false;
@@ -128,6 +140,7 @@ void Jugador::restablecer()
     camuflado = false;
     tiempoCamuflaje = 0.0;
     velocidad = modoPlataformas ? ConfiguracionHacienda::rapidezJugador : ConfiguracionCasa::rapidezJugador;
+    mostrarSpriteActual();
     update();
     if (cambio) {
         emit camuflajeCambiado(false);
@@ -172,6 +185,7 @@ void Jugador::establecerDireccion(const QPointF &nuevaDireccion)
         orientacion = nuevaOrientacion;
         fotogramaActual = 0;
         tiempoAnimacion = 0.0;
+        mostrarSpriteActual();
         update();
     }
 }
@@ -181,6 +195,10 @@ void Jugador::actualizar(qreal segundosTranscurridos)
     if (modoPlataformas) {
         if (!isfinite(segundosTranscurridos) || segundosTranscurridos <= 0) return;
         const qreal dt = segundosTranscurridos;
+        if (tiempoPatada>0) {
+            tiempoPatada=qMax(qreal(0),tiempoPatada-dt);
+            if (tiempoPatada==0) mostrarSpriteActual();
+        }
         const qreal dx = (vueloInercial ? velocidadHorizontalVuelo : direccion.x() * velocidad) * dt;
         // Integracion exacta para aceleracion gravitacional constante.
         const qreal dy = enSuelo ? 0 : velocidadVertical * dt
@@ -198,15 +216,11 @@ void Jugador::actualizar(qreal segundosTranscurridos)
     const QPointF desplazamiento =
         direccion * velocidad * segundosTranscurridos;
 
-    const QRectF cuerpo = boundingRect().translated(pos());
     const QPointF avancePermitido =
-        nivel->limitarDesplazamiento(cuerpo, desplazamiento);
+        nivel->moverPersonaje(this, desplazamiento);
 
     const bool caminando = !avancePermitido.isNull();
 
-    if (caminando) {
-        setPos(pos() + avancePermitido);
-    }
 
     // Si una pared impide avanzar, tambien detiene la animacion.
     actualizarAnimacion(segundosTranscurridos, caminando);
@@ -219,6 +233,7 @@ void Jugador::actualizarAnimacion(qreal segundosTranscurridos, bool caminando)
 
         if (fotogramaActual != 0) {
             fotogramaActual = 0;
+            mostrarSpriteActual();
             update();
         }
 
@@ -232,33 +247,21 @@ void Jugador::actualizarAnimacion(qreal segundosTranscurridos, bool caminando)
         const int pasos = static_cast<int>(tiempoAnimacion / duracionFotograma);
         tiempoAnimacion -= pasos * duracionFotograma;
         fotogramaActual = (fotogramaActual + pasos) % cantidadFotogramas;
+        mostrarSpriteActual();
         update();
     }
 }
 
-void Jugador::paint(QPainter *pintor,
-                    const QStyleOptionGraphicsItem *opciones,
-                    QWidget *widget)
+void Jugador::mostrarSpriteActual()
 {
     const int poseLateral = !enSuelo ? 2 : (direccion.isNull() ? 0 : fotogramaActual % 2);
-    const QPixmap &imagen = modoPlataformas ? fotogramasLaterales[orientacion == Izquierda ? 0 : 1][poseLateral]
-                            : camuflado ? aparienciasCamufladas[orientacion]
-                                      : fotogramas[orientacion][fotogramaActual];
+    const int lado = orientacion == Izquierda ? 0 : 1;
+    const QPixmap &imagen = modoPlataformas
+        ? (disfrazEntrada ? disfrazLateral[lado]
+           : tiempoPatada>0 ? patadaLateral[lado] : fotogramasLaterales[lado][poseLateral])
+        : (camuflado ? aparienciasCamufladas[orientacion] : fotogramas[orientacion][fotogramaActual]);
 
-    if (imagen.isNull()) {
-        // Mantiene el rectangulo visible si falta la imagen o no corresponde.
-        Personaje::paint(pintor, opciones, widget);
-        return;
-    }
-
-    const QRectF cuerpo = boundingRect();
-    const QPointF origen(
-        cuerpo.center().x() - imagen.width() / 2.0,
-        cuerpo.bottom() - imagen.height()
-    );
-
-    // Cada modo conserva su caja de colision aunque cambie la pose.
-    pintor->drawPixmap(origen, imagen);
+    mostrarFotograma(imagen);
 }
 
 void Jugador::activarModoPlataformas()
@@ -274,6 +277,7 @@ void Jugador::saltar()
     vueloInercial = false;
     velocidadVertical = -ConfiguracionHacienda::impulsoSalto;
     enSuelo = false;
+    mostrarSpriteActual();
 }
 
 void Jugador::aterrizar(qreal alturaSuperficie)
@@ -283,9 +287,10 @@ void Jugador::aterrizar(qreal alturaSuperficie)
     velocidadHorizontalVuelo = 0;
     vueloInercial = false;
     enSuelo = true;
+    mostrarSpriteActual();
 }
 
-void Jugador::establecerEnSuelo(bool apoyado) { enSuelo = apoyado; }
+void Jugador::establecerEnSuelo(bool apoyado) { enSuelo = apoyado; mostrarSpriteActual(); }
 bool Jugador::estaEnSuelo() const { return enSuelo; }
 qreal Jugador::velocidadVerticalActual() const { return velocidadVertical; }
 
@@ -301,9 +306,30 @@ void Jugador::iniciarVuelo(const QPointF &velocidadInicial)
     velocidadHorizontalVuelo = velocidadInicial.x();
     velocidadVertical = velocidadInicial.y();
     if (velocidadInicial.x() != 0) orientacion = velocidadInicial.x() < 0 ? Izquierda : Derecha;
+    mostrarSpriteActual();
 }
 QPointF Jugador::velocidadVueloActual() const
 {
     return QPointF(vueloInercial ? velocidadHorizontalVuelo : direccion.x()*velocidad,
                    velocidadVertical);
+}
+
+void Jugador::establecerDisfrazEntrada(bool activo)
+{
+    if (!modoPlataformas) return;
+    disfrazEntrada=activo;
+    velocidad=activo ? 150 : ConfiguracionHacienda::rapidezJugador;
+    mostrarSpriteActual();
+}
+void Jugador::iniciarPatada()
+{
+    if (!modoPlataformas || enSuelo || disfrazEntrada) return;
+    tiempoPatada=0.20;
+    mostrarSpriteActual();
+}
+bool Jugador::miraIzquierda() const { return orientacion==Izquierda; }
+
+void Jugador::establecerRapidezPlataformas(qreal nuevaRapidez)
+{
+    if (modoPlataformas) velocidad=qBound(qreal(100),nuevaRapidez,qreal(400));
 }

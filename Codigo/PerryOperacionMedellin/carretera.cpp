@@ -1,4 +1,5 @@
 #include "carretera.h"
+#include "recursossprites.h"
 #include "vehiculo.h"
 #include "obstaculo.h"
 #include "proyectil.h"
@@ -10,6 +11,9 @@
 #include <cmath>
 using namespace std;
 Carretera::Carretera(QObject *padre):QGraphicsScene(padre),vehiculo(new Vehiculo) {
+    // Se preparan una sola vez; se reutilizan al dibujar y reiniciar.
+    texturaAsfalto=RecursosSprites::cargar(":/imagenes/asfalto_carretera.png",QSize(240,200));
+    texturaLlano=RecursosSprites::cargar(":/imagenes/llano_carretera.png",QSize(240,200));
     setSceneRect(0,0,960,540); addItem(vehiculo); vehiculo->setZValue(2);
     for(auto &objeto:obstaculos) { objeto=new Obstaculo; addItem(objeto); }
     perseguidor=new Vehiculo; perseguidor->establecerEnemigo(true); addItem(perseguidor); perseguidor->setZValue(2);
@@ -21,7 +25,7 @@ Carretera::Carretera(QObject *padre):QGraphicsScene(padre),vehiculo(new Vehiculo
     reiniciar();
 }
 void Carretera::reiniciar() {
-    distancia=0; desplazamiento=0; ultimoMetro=0; vehiculo->restablecer();
+    distancia=0; desplazamiento=0; desplazamientoTextura=0; ultimoMetro=0; vehiculo->restablecer();
     vehiculo->setY(300); vehiculo->show();
     for(auto *o:obstaculos) o->show();
     perseguidor->show();
@@ -143,6 +147,7 @@ void Carretera::actualizar(qreal segundos) {
         const qreal avance=(velocidadAnterior+vehiculo->rapidezAvance())*0.5*paso;
         distancia+=avance/ConfiguracionCarretera::pixelesPorMetro;
         desplazamiento=fmod(desplazamiento+avance,100.0);
+        desplazamientoTextura=fmod(desplazamientoTextura+avance,texturaAsfalto.height());
         for(auto *objeto:obstaculos) objeto->moveBy(0,avance);
         for(auto *objeto:obstaculos) {
             if(objeto->y()>sceneRect().bottom()+20) {
@@ -163,20 +168,20 @@ void Carretera::actualizar(qreal segundos) {
 }
 
 void Carretera::drawBackground(QPainter *p,const QRectF &) {
+    // El desplazamiento visual sigue el avance real del carro.
+    p->drawTiledPixmap(sceneRect(),texturaLlano,QPointF(0,-desplazamientoTextura));
     if(estado==Llegada) {
-        p->fillRect(sceneRect(),QColor(45,80,49));
         p->fillRect(QRectF(200,240,560,190),QColor(201,182,142));
         p->fillRect(QRectF(400,300,160,130),QColor(60,44,35));
         p->fillRect(QRectF(200,230,560,20),QColor(148,67,45));
         return;
     }
-    p->fillRect(sceneRect(),QColor(48,71,51));
-    p->fillRect(QRectF(214,0,532,540),QColor(121,115,99)); p->fillRect(calzada,QColor(43,49,56));
+    p->fillRect(QRectF(214,0,532,540),QColor(121,115,99));
+    p->drawTiledPixmap(calzada,texturaAsfalto,QPointF(0,-desplazamientoTextura));
     p->setPen(QPen(QColor(246,213,107),4)); p->drawLine(248,0,248,540); p->drawLine(712,0,712,540);
     p->setPen(Qt::NoPen);
     for(int fila=-1;fila<6;++fila) {
         const qreal y=fila*100+desplazamiento;
         p->setBrush(QColor(212,217,218)); p->drawRect(QRectF(397,y,6,48)); p->drawRect(QRectF(557,y,6,48));
-        p->setBrush(QColor(34,91,58)); p->drawEllipse(QRectF(110,y,42,42)); p->drawEllipse(QRectF(805,y,42,42));
     }
 }

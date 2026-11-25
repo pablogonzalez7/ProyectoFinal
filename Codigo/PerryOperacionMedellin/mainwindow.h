@@ -3,14 +3,17 @@
 
 #include <QMainWindow>
 #include <QElapsedTimer>
+#include <QTimer>
+#include <QGraphicsView>
 
 using namespace std;
 
 class Nivel;
 class Carretera;
 class Hacienda;
-class QGraphicsView;
-class QTimer;
+class EntradaHacienda;
+class ArenaPopeye;
+class QKeyEvent;
 class Jugador;
 class QLabel;
 
@@ -29,23 +32,32 @@ public:
     ~MainWindow();
 
 protected:
+    void keyPressEvent(QKeyEvent *evento) override;
+    void keyReleaseEvent(QKeyEvent *evento) override;
     bool eventFilter(QObject *objeto, QEvent *evento) override;
 
 private slots:
-    void actualizarJuego();
+    // QTimer emite timeout() y este slot actualiza los objetos del nivel.
+    void moverFigura();
+    void mostrarInformacionCasa(const QString &texto);
+    void mostrarInformacionCarretera(const QString &texto);
+    void mostrarInformacionHacienda(const QString &texto);
+    void mostrarLlegadaHacienda();
+    void responderDerrotaCarretera();
     void limpiarTeclado();
     void entrarCarretera();
     void volverCasa();
     void entrarHacienda();
+    void entrarZonaEscoltas();
+    void entrarArena();
+    void mostrarInformacionArena(const QString &texto);
+    void reiniciarHacienda();
+    void mostrarInformacionEntrada(const QString &texto);
 
 private:
-    enum TeclaMovimiento : quint8 {
-        Arriba    = 1 << 0,
-        Abajo     = 1 << 1,
-        Izquierda = 1 << 2,
-        Derecha   = 1 << 3
-    };
-
+    void prepararVentana();
+    bool procesarTecla(QKeyEvent *evento);
+    void actualizarTitulo();
     void actualizarDireccion();
 
     Ui::MainWindow *interfaz;
@@ -62,8 +74,16 @@ private:
     bool enCarretera = false;
     bool enHacienda = false;
     Hacienda *hacienda = nullptr;
+    EntradaHacienda *entrada = nullptr;
+    bool enEntrada = false;
+    ArenaPopeye *arena = nullptr;
+    bool enArena = false;
 
-    quint8 teclas = 0;
+    // Una variable por tecla: true mientras se mantiene presionada.
+    bool teclaArriba = false;
+    bool teclaAbajo = false;
+    bool teclaIzquierda = false;
+    bool teclaDerecha = false;
 };
 
 #endif // MAINWINDOW_H

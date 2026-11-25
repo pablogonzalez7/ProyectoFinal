@@ -1,0 +1,36 @@
+PAISAJES DE CARRETERA Y HACIENDA
+
+Se conservan los controles, velocidades, dificultad, colisiones y fisicas.
+Se conserva la distribucion de ambos mapas y los sprites anteriores.
+La casa mantiene su aspecto. La hacienda incorpora un panorama decorativo.
+
+ARCHIVOS NUEVOS
+imagenes/asfalto_carretera.png: textura de asfalto.
+imagenes/llano_carretera.png: pasto de los dos costados.
+imagenes/panorama_hacienda.png: cielo, nubes, sol y palmeras altas con cocos.
+Los tres se incluyen en los recursos de CMake, tambien para pruebas opcionales.
+
+EFICIENCIA Y MEMORIA
+RecursosSprites prepara los QPixmap una vez al construir cada escena.
+Las texturas se reutilizan al dibujar; no se abren PNG en cada fotograma.
+El asfalto y el pasto se repiten con drawTiledPixmap, sin crear un objeto por
+cada baldosa. Su desplazamiento sigue el avance real del carro.
+El panorama es un QPixmap de 1620x540; se desplaza mas despacio que la camara
+para dar profundidad (paralaje). No se crea una imagen de 4480x540 por fotograma.
+La hacienda repinta toda la vista visible para evitar rastros del fondo al
+mover la camara. Las otras escenas conservan su actualizacion parcial.
+QPixmap gestiona sus datos y los libera cuando deja de haber referencias.
+Los fondos decorativos no se agregan al contenedor de obstaculos.
+
+VERIFICACION
+Compilacion con Qt 6 en Linux y revision de capturas de carretera, entrada de
+hacienda, lianas y final. Falta comprobar la ejecucion en Windows.
+Las pruebas descritas en NOTAS_REFACTOR.txt corresponden a la actualizacion
+anterior de codigo y colisiones, incluida aqui como base.
+
+CREACION DE IMAGENES
+Generadas con la herramienta integrada de imagenes; no con la alternativa CLI.
+Briefs: asfalto cenital repetible azul gris sin marcas; llano verde cenital
+repetible con pequenos mechones y flores; panorama tropical lateral 3:1 con
+cielo azul, nubes, un sol y palmeras altas con cocos, sin plataformas ni agua.
+El agua, el piso y las lianas del juego se dibujan delante del panorama.

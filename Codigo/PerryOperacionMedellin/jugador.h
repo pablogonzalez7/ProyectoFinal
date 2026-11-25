@@ -5,6 +5,7 @@
 
 #include <QPixmap>
 #include <QPointF>
+#include <array>
 
 using namespace std;
 
@@ -23,6 +24,10 @@ public:
     // La misma clase Jugador funciona en vista superior y en plataformas.
     void activarModoPlataformas();
     void saltar();
+    void establecerDisfrazEntrada(bool activo);
+    void establecerRapidezPlataformas(qreal nuevaRapidez);
+    void iniciarPatada();
+    bool miraIzquierda() const;
     void iniciarVuelo(const QPointF &velocidadInicial);
     QPointF velocidadVueloActual() const;
     void aterrizar(qreal alturaSuperficie);
@@ -39,9 +44,6 @@ public:
 
     QRectF boundingRect() const override;
 
-    void paint(QPainter *pintor,
-               const QStyleOptionGraphicsItem *opciones,
-               QWidget *widget) override;
 
 signals:
     void camuflajeCambiado(bool camuflado);
@@ -58,10 +60,16 @@ private:
     static constexpr int cantidadFotogramas = 4;
 
     void cargarSprites();
+    void mostrarSpriteActual();
+
     void actualizarAnimacion(qreal segundosTranscurridos, bool caminando);
 
     QPointF direccion;
-    QPixmap fotogramasLaterales[2][3]; // Izquierda/derecha: quieto, paso y salto.
+    array<array<QPixmap, 3>, 2> fotogramasLaterales; // Izquierda/derecha: quieto, paso y salto.
+    array<QPixmap,2> disfrazLateral;
+    array<QPixmap,2> patadaLateral;
+    bool disfrazEntrada = false;
+    qreal tiempoPatada = 0;
     bool modoPlataformas = false;
     bool enSuelo = false;
     qreal velocidadVertical = 0.0;
@@ -72,8 +80,8 @@ private:
     const Nivel *nivel;
 
     // Los 16 fotogramas se preparan una vez y se reutilizan al dibujar.
-    QPixmap fotogramas[cantidadDirecciones][cantidadFotogramas];
-    QPixmap aparienciasCamufladas[cantidadDirecciones];
+    array<array<QPixmap, cantidadFotogramas>, cantidadDirecciones> fotogramas;
+    array<QPixmap, cantidadDirecciones> aparienciasCamufladas;
     bool camuflado = false;
     qreal tiempoCamuflaje = 0.0;
     Orientacion orientacion = Abajo;

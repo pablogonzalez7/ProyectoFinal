@@ -369,11 +369,11 @@ int main(int argc, char *argv[])
             exigir(reloj->isActive(), "No reanuda");
             QKeyEvent r(QEvent::KeyPress,Qt::Key_R,Qt::NoModifier);
             QApplication::sendEvent(vista,&r);
-            QMetaObject::invokeMethod(&ventana,"actualizarJuego",Qt::DirectConnection);
+            QMetaObject::invokeMethod(&ventana,"moverFigura",Qt::DirectConnection);
             exigir(ventana.grab().save(carpeta+"/inicio.png"), "No guarda captura");
             nivel->obtenerJugador()->alternarCamuflaje();
             nivel->obtenerJugador()->setPos(1300,700);
-            QMetaObject::invokeMethod(&ventana,"actualizarJuego",Qt::DirectConnection);
+            QMetaObject::invokeMethod(&ventana,"moverFigura",Qt::DirectConnection);
             exigir(vista->mapToScene(vista->viewport()->rect().center()).x()>900, "Camara no sigue a Perry");
             exigir(ventana.grab().save(carpeta+"/garaje.png"), "No guarda captura");
             QImage mapa(1440,800,QImage::Format_ARGB32_Premultiplied);

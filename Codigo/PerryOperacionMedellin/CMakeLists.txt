@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.19)
 project(PerryOperacionMedellin LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
@@ -21,6 +24,12 @@ qt_add_executable(PerryOperacionMedellin
     obstaculo.h obstaculo.cpp
     proyectil.h proyectil.cpp
     hacienda.h hacienda.cpp
+    guardiaentrada.h guardiaentrada.cpp
+    entradahacienda.h entradahacienda.cpp
+    arenapopeye.h arenapopeye.cpp
+    popeye.h popeye.cpp
+    proyectilcombate.h proyectilcombate.cpp
+    memoriacombate.h
     liana.h liana.cpp
     plataforma.h plataforma.cpp
     hipopotamo.h hipopotamo.cpp
@@ -67,13 +76,18 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
         imagenes/liana.png
         imagenes/agua_hacienda.png
         imagenes/suelo_hacienda.png
+        imagenes/asfalto_carretera.png
+        imagenes/llano_carretera.png
+        imagenes/panorama_hacienda.png
+        imagenes/popeye.png
+        imagenes/interior_hacienda.png
 )
 
 # Opcional: pruebas de mecanicas, rutas, reinicios y teclado.
 option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    foreach(prueba IN ITEMS casa lianas)
+    foreach(prueba IN ITEMS casa lianas margenes entrada popeye)
         qt_add_executable(pruebas_${prueba}
             pruebas/prueba_${prueba}.cpp
             mainwindow.h mainwindow.cpp mainwindow.ui
@@ -87,6 +101,12 @@ if(CONSTRUIR_PRUEBAS)
             obstaculo.h obstaculo.cpp
             proyectil.h proyectil.cpp
             hacienda.h hacienda.cpp
+            guardiaentrada.h guardiaentrada.cpp
+            entradahacienda.h entradahacienda.cpp
+            arenapopeye.h arenapopeye.cpp
+            popeye.h popeye.cpp
+            proyectilcombate.h proyectilcombate.cpp
+            memoriacombate.h
             liana.h liana.cpp
             plataforma.h plataforma.cpp
             hipopotamo.h hipopotamo.cpp
@@ -113,6 +133,11 @@ if(CONSTRUIR_PRUEBAS)
                 imagenes/liana.png
                 imagenes/agua_hacienda.png
                 imagenes/suelo_hacienda.png
+                imagenes/asfalto_carretera.png
+                imagenes/llano_carretera.png
+                imagenes/panorama_hacienda.png
+                imagenes/popeye.png
+                imagenes/interior_hacienda.png
         )
         add_test(NAME ${prueba} COMMAND pruebas_${prueba} ${CMAKE_CURRENT_BINARY_DIR}/capturas)
         set_tests_properties(${prueba} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

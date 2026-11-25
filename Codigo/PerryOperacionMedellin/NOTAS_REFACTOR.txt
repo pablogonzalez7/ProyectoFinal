@@ -1,0 +1,50 @@
+BASE VERIFICADA
+Repositorio pablogonzalez7/ProyectoFinal, rama cristian.
+Commit 5ad484b9bf3d8c0e048bf02fec8919a8f138b0a8.
+Los 38 archivos de codigo, CMake, UI y pruebas se obtuvieron del repositorio;
+coinciden con la copia anterior ambientes_juego.
+
+ALCANCE SOLICITADO POR PABLO
+Conservar el juego de Cristian: mismos PNG, seis habitaciones, muebles,
+patrullas, niveles, controles, parametros fisicos, dificultad y animaciones.
+No aplicar Casa Sencilla ni la distribucion de cuatro habitaciones.
+Solo refactorizar estilo Qt y corregir margenes de colision/apoyo.
+Actualizacion preparada para instalar sobre la version indicada arriba.
+
+CAMBIOS
+MainWindow: QTimer, SIGNAL(timeout()), SLOT(moverFigura()), slots con nombre,
+keyPressEvent y keyReleaseEvent, cuatro bool de teclas y filtro de foco.
+Personaje: QGraphicsPixmapItem hijo; setPixmap comparte el recurso preparado.
+Jugador/Villano: array de fotogramas; se conservan recortes, indices,
+ritmo de animacion y posicion del dibujo originales.
+Nivel: QList<QGraphicsItem *> con paredes y muebles de la escena original.
+Se usa collidesWithItem. Las paredes conservan su caja; los muebles usan
+la silueta de los sprites (MaskShape), evitando colision por transparencias.
+Movimiento en pasos de hasta 4 px y ajuste de contacto en siete divisiones;
+el error de aproximacion por paso es menor a 0.032 px. No es una nueva fisica.
+La navegacion y vision mantienen las geometrías anteriores para conservar
+las patrullas y el aspecto de los conos.
+Hacienda: el centro horizontal de los pies determina apoyo y aterrizaje;
+una cola o esquina del rectangulo encima del suelo ya no mantiene a Perry.
+No se modifican g, impulso, rapidez, plataformas o ciclos de hipopotamos.
+
+PROPIEDAD Y REUTILIZACION
+QGraphicsScene elimina sus items; la lista no los elimina.
+Cada personaje posee su imagen hija. No hay delete duplicado.
+El mismo temporizador, escenas, personajes, imagenes, proyectiles y obstaculos
+se conservan/reinician. Los array liberan sus QPixmap al destruirse.
+No hay carga de archivos de imagen dentro de paint ni del movimiento.
+
+VERIFICACION EN LINUX / QT 6
+12 pruebas de casa aprobadas, incluyendo ambos ordenes de llaves con
+patrullas activas. Recorrido de rio y dos lianas completo con tres vidas.
+Transicion F a los 1200 m, agarre E, salto, R y pausa aprobados.
+Prueba de margenes: contacto con cama x=229.969 (antes limite x=228),
+siluetas sin solapamiento y contacto con un pixel adicional hacia el mueble.
+Apoyo al borde: centro dentro sostiene; centro fuera inicia caida y no permite
+saltar en el aire. No aterriza en hipopotamo solo con un borde del sprite.
+Cien reinicios mantienen los objetos y apuntadores.
+59 capturas deterministas comparadas con la version original, cero diferencias:
+escenarios iniciales, fotogramas de Perry, patrulla y salto.
+Los 13 PNG permanecen identicos byte a byte en la copia de trabajo.
+Pendiente comprobar estos ajustes en el Qt Creator de Windows de Cristian o Pablo.

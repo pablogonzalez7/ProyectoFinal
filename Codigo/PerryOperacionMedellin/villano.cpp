@@ -54,7 +54,7 @@ Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
             + 2.0 * ConfiguracionCasa::semianguloVision * i / (cantidadRayos - 1));
         direccionesRayos[i] = QPointF(qCos(angulo), qSin(angulo));
     }
-    connect(jugador, &Jugador::camuflajeCambiado, this, &Villano::responderCamuflaje);
+    connect(jugador, SIGNAL(camuflajeCambiado(bool)), this, SLOT(responderCamuflaje(bool)));
     restablecer();
 }
 
@@ -176,13 +176,12 @@ void Villano::seguirRuta(qreal segundosTranscurridos)
         }
         const qreal longitud = qMin(presupuesto, distancia);
         const QPointF deseado = diferencia * (longitud / distancia);
-        const QPointF permitido = nivel->limitarDesplazamiento(sceneBoundingRect(), deseado);
+        const QPointF permitido = nivel->moverPersonaje(this, deseado);
         const qreal avance2 = longitudCuadrada(permitido);
         if (avance2 < 1.0e-12) {
             return;
         }
         pasoAnimacion = fmod(pasoAnimacion + qSqrt(avance2) / 12.0, 2.0);
-        setPos(pos() + permitido);
         direccionVista = permitido / qSqrt(avance2);
         presupuesto -= longitud;
         if (longitudCuadrada(camino.at(pasoRuta) - centro()) < 0.0001) {
@@ -233,6 +232,7 @@ void Villano::actualizar(qreal segundosTranscurridos)
 
 void Villano::actualizarCono(bool forzar)
 {
+    mostrarSpriteActual();
     const qreal radio = radioDeteccion();
     if (!forzar && longitudCuadrada(pos() - ultimaPosicionCono) < 16.0
         && longitudCuadrada(direccionVista - ultimaDireccionCono) < 0.0001
@@ -263,12 +263,16 @@ void Villano::actualizarCono(bool forzar)
 
 void Villano::paint(QPainter *pintor, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    int orientacion = direccionVista.y() < 0 ? 1 : 0;
-    if (qAbs(direccionVista.x()) >= qAbs(direccionVista.y()))
-        orientacion = direccionVista.x() < 0 ? 2 : 3;
-    pintor->drawPixmap(3, 0, sprites[orientacion][int(pasoAnimacion) % 2]);
     if (estado == Persiguiendo) {
         pintor->setPen(QColor("#ff786b"));
         pintor->drawText(QRectF(24,0,8,14), Qt::AlignCenter, "!");
     }
+}
+
+void Villano::mostrarSpriteActual()
+{
+    int orientacion = direccionVista.y() < 0 ? 1 : 0;
+    if (qAbs(direccionVista.x()) >= qAbs(direccionVista.y()))
+        orientacion = direccionVista.x() < 0 ? 2 : 3;
+    mostrarFotograma(sprites[orientacion][int(pasoAnimacion) % 2]);
 }

@@ -12,6 +12,7 @@
 using namespace std;
 
 class Jugador;
+class Personaje;
 class Llave;
 class Villano;
 class QGraphicsRectItem;
@@ -34,7 +35,8 @@ public:
     int cantidadLlavesRecogidas() const;
     QString informacionActual() const;
 
-    QPointF limitarDesplazamiento(const QRectF &cuerpo,
+    const QList<QGraphicsItem *> &obtenerObstaculos() const;
+    QPointF moverPersonaje(Personaje *personaje,
                                  const QPointF &desplazamiento) const;
     bool hayLineaDeVision(const QPointF &origen, const QPointF &destino) const;
     QPointF recortarRayo(const QPointF &origen, const QPointF &destino) const;
@@ -65,7 +67,10 @@ private:
     void iniciarAlarma();
     void perder(const QString &motivo);
 
-    const QList<QRectF> paredes;
+    bool hayChoque(Personaje *personaje) const;
+    // Apuntadores no propietarios: la escena libera todos estos objetos.
+    QList<QGraphicsItem *> obstaculos;
+    static constexpr int cantidadParedes = 14;
     array<Nodo, ConfiguracionCasa::totalCeldas> navegacion;
     array<Llave *, 2> llaves{};
     QList<Villano *> guardias;
