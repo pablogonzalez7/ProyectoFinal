@@ -16,32 +16,35 @@
 
 using namespace std;
 
-namespace {
-qreal longitudCuadrada(const QPointF &p)
+namespace
 {
-    return p.x() * p.x() + p.y() * p.y();
-}
+qreal longitudCuadrada(const QPointF& p) { return p.x() * p.x() + p.y() * p.y(); }
 }
 
-Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
-                 const QList<QPointF> &puntosPatrulla)
+Villano::Villano(const Nivel* nivelActual, const Jugador* objetivo, const QList<QPointF>& puntosPatrulla)
     : Personaje(ConfiguracionCasa::rapidezPatrulla)
-    , nivel(nivelActual), jugador(objetivo), patrulla(puntosPatrulla)
+    , nivel(nivelActual)
+    , jugador(objetivo)
+    , patrulla(puntosPatrulla)
     , cono(new QGraphicsPathItem(this))
 {
-    if (!nivel || !jugador || patrulla.size() < 2) {
+    if (!nivel || !jugador || patrulla.size() < 2)
+    {
         throw invalid_argument("Un guardia necesita nivel, jugador y al menos dos puntos de patrulla.");
     }
     const QPixmap hoja(":/imagenes/policias.png");
-    if (hoja.isNull()) throw runtime_error("No se pudo cargar la hoja de policias.");
-    for (int columna = 0; columna < 4; ++columna) {
-        for (int fila = 0; fila < 2; ++fila) {
+    if (hoja.isNull())
+        throw runtime_error("No se pudo cargar la hoja de policias.");
+    for (int columna = 0; columna < 4; ++columna)
+    {
+        for (int fila = 0; fila < 2; ++fila)
+        {
             const int ancho = hoja.width() / 4, alto = hoja.height() / 2;
             // Cada celda contiene la misma figura; se excluyen los margenes.
-            const QRect recorte(columna * ancho + ancho * 22 / 100,
-                                fila * alto + alto * 4 / 100,
-                                ancho * 56 / 100, alto * 92 / 100);
-            sprites[columna][fila] = RecursosSprites::cargar(":/imagenes/policias.png", QSize(26,40), recorte);
+            const QRect recorte(columna * ancho + ancho * 22 / 100, fila * alto + alto * 4 / 100,
+                ancho * 56 / 100, alto * 92 / 100);
+            sprites[columna][fila]
+                = RecursosSprites::cargar(":/imagenes/policias.png", QSize(26, 40), recorte);
         }
     }
     camino.reserve(ConfiguracionCasa::totalCeldas + 2);
@@ -49,7 +52,8 @@ Villano::Villano(const Nivel *nivelActual, const Jugador *objetivo,
     cono->setAcceptedMouseButtons(Qt::NoButton);
     cono->setPen(QPen(Qt::NoPen));
     cono->setZValue(-1);
-    for (int i = 0; i < cantidadRayos; ++i) {
+    for (int i = 0; i < cantidadRayos; ++i)
+    {
         const qreal angulo = qDegreesToRadians(-ConfiguracionCasa::semianguloVision
             + 2.0 * ConfiguracionCasa::semianguloVision * i / (cantidadRayos - 1));
         direccionesRayos[i] = QPointF(qCos(angulo), qSin(angulo));
@@ -64,13 +68,14 @@ Villano::Estado Villano::obtenerEstado() const { return estado; }
 qreal Villano::radioDeteccion() const
 {
     // La linterna conserva su alcance; el disfraz impide reconocer a Perry.
-    return ConfiguracionCasa::radioVision;
+    return perfil.radio;
 }
 
 void Villano::responderCamuflaje(bool activo)
 {
     esperaPercepcion = 0.0;
-    if (activo && estado != Patrullando) {
+    if (activo && estado != Patrullando)
+    {
         cambiarEstado(Patrullando);
         esperaBusqueda = 0.0;
         esperaPatrulla = 0.0;
@@ -82,7 +87,8 @@ void Villano::responderCamuflaje(bool activo)
 
 void Villano::cambiarEstado(Estado nuevoEstado)
 {
-    if (estado != nuevoEstado) {
+    if (estado != nuevoEstado)
+    {
         estado = nuevoEstado;
         update();
         emit estadoCambiado();
@@ -92,6 +98,7 @@ void Villano::cambiarEstado(Estado nuevoEstado)
 void Villano::restablecer()
 {
     alarma = false;
+    sectorBusqueda = 0;
     pasoAnimacion = 0;
     cambiarEstado(Patrullando);
     velocidad = ConfiguracionCasa::rapidezPatrulla;
@@ -116,7 +123,8 @@ void Villano::establecerAlarma(bool activa)
 
 bool Villano::puedeVerJugador() const
 {
-    if (jugador->estaCamuflado()) {
+    if (jugador->estaCamuflado())
+    {
         return false;
     }
     const QPointF origen = centro();
@@ -124,20 +132,23 @@ bool Villano::puedeVerJugador() const
     const QPointF diferencia = objetivo - origen;
     const qreal distancia2 = longitudCuadrada(diferencia);
     const qreal radio = radioDeteccion();
-    if (distancia2 > radio * radio) {
+    if (distancia2 > radio * radio)
+    {
         return false;
     }
-    if (distancia2 > 1.0e-8) {
+    if (distancia2 > 1.0e-8)
+    {
         const qreal producto = QPointF::dotProduct(direccionVista, diferencia);
-        const qreal coseno = qCos(qDegreesToRadians(ConfiguracionCasa::semianguloVision));
-        if (producto <= 0.0 || producto * producto < distancia2 * coseno * coseno) {
+        const qreal coseno = qCos(qDegreesToRadians(perfil.semiangulo));
+        if (producto <= 0.0 || producto * producto < distancia2 * coseno * coseno)
+        {
             return false;
         }
     }
     return nivel->hayLineaDeVision(origen, objetivo);
 }
 
-void Villano::irHacia(const QPointF &destino)
+void Villano::irHacia(const QPointF& destino)
 {
     nivel->calcularRuta(centro(), destino, camino);
     pasoRuta = 0;
@@ -145,18 +156,32 @@ void Villano::irHacia(const QPointF &destino)
 
 void Villano::comprobarJugador()
 {
-    if (puedeVerJugador()) {
+    if (puedeVerJugador())
+    {
         const QPointF observado = jugador->sceneBoundingRect().center();
         const bool nuevaPersecucion = estado != Persiguiendo;
         const bool cambioDestino = longitudCuadrada(observado - ultimaPosicionConocida) >= 16.0;
         ultimaPosicionConocida = observado;
+        sectorBusqueda = 0;
         cambiarEstado(Persiguiendo);
         esperaPatrulla = 0.0;
         esperaBusqueda = 0.0;
-        if (nuevaPersecucion || cambioDestino || pasoRuta >= camino.size()) {
+        if (nuevaPersecucion || cambioDestino || pasoRuta >= camino.size())
+        {
             irHacia(ultimaPosicionConocida);
         }
-    } else if (estado == Persiguiendo) {
+        if (nuevaPersecucion && perfil.comparteAvisos)
+            emit jugadorDetectado(observado);
+    }
+    else if (estado == Persiguiendo)
+    {
+        if (!perfil.investiga)
+        {
+            cambiarEstado(Patrullando);
+            irHacia(patrulla.at(indicePatrulla));
+            return;
+        }
+        sectorBusqueda = 0;
         cambiarEstado(Investigando);
         esperaBusqueda = 0.0;
         // Solo se investiga la ultima posicion vista, no la posicion oculta actual.
@@ -167,10 +192,12 @@ void Villano::comprobarJugador()
 void Villano::seguirRuta(qreal segundosTranscurridos)
 {
     qreal presupuesto = velocidad * segundosTranscurridos;
-    while (presupuesto > 1.0e-8 && pasoRuta < camino.size()) {
+    while (presupuesto > 1.0e-8 && pasoRuta < camino.size())
+    {
         const QPointF diferencia = camino.at(pasoRuta) - centro();
         const qreal distancia = qSqrt(longitudCuadrada(diferencia));
-        if (distancia < 0.01) {
+        if (distancia < 0.01)
+        {
             ++pasoRuta;
             continue;
         }
@@ -178,13 +205,15 @@ void Villano::seguirRuta(qreal segundosTranscurridos)
         const QPointF deseado = diferencia * (longitud / distancia);
         const QPointF permitido = nivel->moverPersonaje(this, deseado);
         const qreal avance2 = longitudCuadrada(permitido);
-        if (avance2 < 1.0e-12) {
+        if (avance2 < 1.0e-12)
+        {
             return;
         }
         pasoAnimacion = fmod(pasoAnimacion + qSqrt(avance2) / 12.0, 2.0);
         direccionVista = permitido / qSqrt(avance2);
         presupuesto -= longitud;
-        if (longitudCuadrada(camino.at(pasoRuta) - centro()) < 0.0001) {
+        if (longitudCuadrada(camino.at(pasoRuta) - centro()) < 0.0001)
+        {
             ++pasoRuta;
         }
     }
@@ -192,21 +221,25 @@ void Villano::seguirRuta(qreal segundosTranscurridos)
 
 void Villano::actualizar(qreal segundosTranscurridos)
 {
-    if (segundosTranscurridos <= 0.0) {
+    if (segundosTranscurridos <= 0.0)
+    {
         return;
     }
     esperaPercepcion -= segundosTranscurridos;
-    if (esperaPercepcion <= 0.0) {
+    if (esperaPercepcion <= 0.0)
+    {
         esperaPercepcion = ConfiguracionCasa::periodoPercepcion;
         comprobarJugador();
     }
-    velocidad = estado == Patrullando ? ConfiguracionCasa::rapidezPatrulla
-                                     : ConfiguracionCasa::rapidezPersecucion;
-    if (alarma) {
+    velocidad
+        = estado == Patrullando ? ConfiguracionCasa::rapidezPatrulla : ConfiguracionCasa::rapidezPersecucion;
+    if (alarma)
+    {
         velocidad *= ConfiguracionCasa::factorAlarma;
     }
     // La percepcion sigue activa durante las pausas; no son periodos de ceguera.
-    if (estado == Patrullando && esperaPatrulla > 0.0) {
+    if (estado == Patrullando && esperaPatrulla > 0.0)
+    {
         pasoAnimacion = 0;
         update();
         esperaPatrulla -= segundosTranscurridos;
@@ -214,14 +247,22 @@ void Villano::actualizar(qreal segundosTranscurridos)
         return;
     }
     seguirRuta(segundosTranscurridos);
-    if (pasoRuta >= camino.size()) {
-        if (estado == Patrullando) {
+    if (pasoRuta >= camino.size())
+    {
+        if (estado == Patrullando)
+        {
             esperaPatrulla = ConfiguracionCasa::pausaPatrulla;
             indicePatrulla = (indicePatrulla + 1) % patrulla.size();
             irHacia(patrulla.at(indicePatrulla));
-        } else if (estado == Investigando) {
+        }
+        else if (estado == Investigando)
+        {
             esperaBusqueda += segundosTranscurridos;
-            if (esperaBusqueda >= ConfiguracionCasa::duracionBusqueda) {
+            if (esperaBusqueda >= ConfiguracionCasa::duracionBusqueda)
+            {
+                esperaBusqueda = 0;
+                if (perfil.revisaSectores && revisarSiguienteSector())
+                    return;
                 cambiarEstado(Patrullando);
                 irHacia(patrulla.at(indicePatrulla));
             }
@@ -235,24 +276,25 @@ void Villano::actualizarCono(bool forzar)
     mostrarSpriteActual();
     const qreal radio = radioDeteccion();
     if (!forzar && longitudCuadrada(pos() - ultimaPosicionCono) < 16.0
-        && longitudCuadrada(direccionVista - ultimaDireccionCono) < 0.0001
-        && radio == ultimoRadioCono && estado == ultimoEstadoCono
-        && alarma == ultimaAlarmaCono) {
+        && longitudCuadrada(direccionVista - ultimaDireccionCono) < 0.0001 && radio == ultimoRadioCono
+        && estado == ultimoEstadoCono && alarma == ultimaAlarmaCono)
+    {
         return;
     }
     QPainterPath forma;
     const QPointF origen = centro();
     forma.moveTo(boundingRect().center());
-    for (const QPointF &rayo : direccionesRayos) {
+    for (const QPointF& rayo : direccionesRayos)
+    {
         const QPointF girado(direccionVista.x() * rayo.x() - direccionVista.y() * rayo.y(),
-                             direccionVista.y() * rayo.x() + direccionVista.x() * rayo.y());
+            direccionVista.y() * rayo.x() + direccionVista.x() * rayo.y());
         forma.lineTo(nivel->recortarRayo(origen, origen + girado * radio) - pos());
     }
     forma.closeSubpath();
     cono->setPath(forma);
-    const QColor color = estado == Persiguiendo ? QColor(255, 65, 65, 75)
-        : (alarma || estado == Investigando ? QColor(255, 155, 35, 65)
-                                            : QColor(255, 225, 95, 50));
+    const QColor color = estado == Persiguiendo
+        ? QColor(255, 65, 65, 75)
+        : (alarma || estado == Investigando ? QColor(255, 155, 35, 65) : QColor(255, 225, 95, 50));
     cono->setBrush(QBrush(color));
     ultimaPosicionCono = pos();
     ultimaDireccionCono = direccionVista;
@@ -261,11 +303,12 @@ void Villano::actualizarCono(bool forzar)
     ultimaAlarmaCono = alarma;
 }
 
-void Villano::paint(QPainter *pintor, const QStyleOptionGraphicsItem *, QWidget *)
+void Villano::paint(QPainter* pintor, const QStyleOptionGraphicsItem*, QWidget*)
 {
-    if (estado == Persiguiendo) {
+    if (estado == Persiguiendo)
+    {
         pintor->setPen(QColor("#ff786b"));
-        pintor->drawText(QRectF(24,0,8,14), Qt::AlignCenter, "!");
+        pintor->drawText(QRectF(24, 0, 8, 14), Qt::AlignCenter, "!");
     }
 }
 
@@ -275,4 +318,46 @@ void Villano::mostrarSpriteActual()
     if (qAbs(direccionVista.x()) >= qAbs(direccionVista.y()))
         orientacion = direccionVista.x() < 0 ? 2 : 3;
     mostrarFotograma(sprites[orientacion][int(pasoAnimacion) % 2]);
+}
+
+void Villano::establecerDificultad(Dificultad nueva)
+{
+    perfil = perfilGuardia(nueva);
+    for (int i = 0; i < cantidadRayos; ++i)
+    {
+        const qreal angulo
+            = qDegreesToRadians(-perfil.semiangulo + 2 * perfil.semiangulo * i / (cantidadRayos - 1));
+        direccionesRayos[i] = QPointF(qCos(angulo), qSin(angulo));
+    }
+    actualizarCono(true);
+}
+void Villano::recibirAviso(const QPointF& posicionVista)
+{
+    if (!perfil.comparteAvisos || jugador->estaCamuflado() || estado == Persiguiendo)
+        return;
+    if (estado == Investigando && longitudCuadrada(posicionVista - ultimaPosicionConocida) < 1600)
+        return;
+    // El aviso contiene una posicion observada, nunca la posicion oculta actual.
+    ultimaPosicionConocida = posicionVista;
+    sectorBusqueda = 0;
+    esperaBusqueda = 0;
+    esperaPatrulla = 0;
+    cambiarEstado(Investigando);
+    irHacia(posicionVista);
+    actualizarCono(true);
+}
+bool Villano::revisarSiguienteSector()
+{
+    static const array<QPointF, 4> desplazamientos { { QPointF(80, 0), QPointF(0, 80), QPointF(-80, 0),
+        QPointF(0, -80) } };
+    while (sectorBusqueda < int(desplazamientos.size()))
+    {
+        const QPointF destino = ultimaPosicionConocida + desplazamientos[sectorBusqueda++];
+        if (!nivel->caminoLibre(ultimaPosicionConocida, destino))
+            continue;
+        irHacia(destino);
+        if (!camino.isEmpty())
+            return true;
+    }
+    return false;
 }

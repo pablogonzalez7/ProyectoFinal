@@ -28,6 +28,7 @@ public:
     const array<GuardiaEntrada *,2> &obtenerGuardias() const { return guardias; }
     const array<Proyectil *,12> &obtenerProyectiles() const { return balas; }
 signals:
+    void sonidoSolicitado(int evento);
     void informacionCambiada(const QString &texto);
     void controlesLiberados();
     void partidaPerdida();

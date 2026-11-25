@@ -1,4 +1,5 @@
 #include "entradahacienda.h"
+#include "eventossonido.h"
 #include "guardiaentrada.h"
 #include "jugador.h"
 #include "proyectil.h"
@@ -65,6 +66,7 @@ void EntradaHacienda::transformar()
     // Solo una transformacion por intento: repetir C no prolonga la sorpresa.
     if (estado!=Disfrazado) return;
     estado=Sorpresa;
+    emit sonidoSolicitado(Sonido::Camuflaje);
     sorpresa=3;
     jugador->establecerDisfrazEntrada(false);
     for (auto *guardia : guardias) guardia->cambiarEstado(GuardiaEntrada::Sorprendido);
@@ -96,12 +98,14 @@ void EntradaHacienda::actualizarGolpe()
     for (auto *guardia : guardias) {
         if (guardia->estaActivo() && zonaGolpe->collidesWithItem(guardia->obtenerCabeza())) {
             guardia->cambiarEstado(GuardiaEntrada::Inconsciente);
+            emit sonidoSolicitado(Sonido::Impacto);
             golpeUsado=true;
             break;
         }
     }
     if (!guardias[0]->estaActivo() && !guardias[1]->estaActivo()) {
         estado=Despejada;
+        emit sonidoSolicitado(Sonido::Victoria);
         for (auto *bala : balas) bala->desactivar();
         update();
     }
@@ -114,6 +118,7 @@ void EntradaHacienda::disparar(GuardiaEntrada *guardia)
         if (bala->estaActivo()) continue;
         bala->setRotation(direccion>0 ? 90 : -90);
         bala->activar(origen,origen+QPointF(direccion*100,0));
+        emit sonidoSolicitado(Sonido::Disparo);
         break;
     }
 }
@@ -121,6 +126,7 @@ void EntradaHacienda::recibirImpacto()
 {
     if (inmunidad>0 || estado==Derrota) return;
     --corazones;
+    emit sonidoSolicitado(Sonido::Impacto);
     inmunidad=0.9; // Evita que dos balas simultaneas gasten varias vidas.
     if (corazones==0) {
         estado=Derrota;

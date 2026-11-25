@@ -9,7 +9,7 @@ using namespace std;
 class Popeye : public Personaje
 {
 public:
-    static constexpr int resistenciaMaxima = 30;
+    static constexpr int resistenciaMaxima = 10;
     enum Tactica
     {
         Mantener,

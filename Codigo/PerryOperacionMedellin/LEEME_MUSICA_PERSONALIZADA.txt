@@ -1,0 +1,77 @@
+MUSICA PERSONALIZADA - PERRY OPERACION MEDELLIN
+25 de noviembre de 2026
+
+INSTALAR
+Cierra el juego. Copia el contenido de PerryOperacionMedellin de este ZIP
+sobre la carpeta actual del proyecto, junto a CMakeLists.txt. Reemplaza los
+archivos y combina las carpetas. Ejecuta CMake y Build > Rebuild Project.
+Los audios estan integrados en recursos: solo copiarlos no actualiza el EXE.
+Necesita Qt Multimedia del mismo kit que usas en Qt Creator.
+
+TRES ARCHIVOS RECIBIDOS
+- perry.mp3.mp3 -> sonidos/perry.mp3: aproximadamente 43 segundos.
+- popeye.mp3.mp3 -> sonidos/popeye.mp3: aproximadamente 71 segundos.
+- victoria_popeye.mp3.mp3 -> sonidos/victoria_popeye.mp3: aproximadamente 14 segundos.
+Se conservan los MP3 recibidos completos, sin recortes ni cambio de velocidad.
+Estos tres audios fueron aportados por el usuario, no los genera el script
+herramientas/generar_audio.py. Ese script solo crea los efectos y las dos
+pistas sintetizadas que existian antes de esta actualizacion.
+
+COMPORTAMIENTO
+1. Perry suena en bucle en casa, carretera, rio/lianas y entrada vigilada.
+   Cambiar entre esos escenarios no cambia la fuente ni reinicia la cancion.
+2. Una captura en casa o el agotamiento de la alarma reinicia Perry desde cero.
+   La reaparicion automatica posterior no vuelve a reiniciar la pista.
+3. Caer al agua con vidas restantes conserva la musica. Agotar las tres vidas
+   reinicia Perry desde cero. Perder la carretera o la entrada vigilada tambien
+   reinicia la cancion al volver a la etapa correspondiente.
+4. Al entrar a combatir con Popeye se sustituye la musica por popeye.mp3 en bucle.
+5. Al derrotarlo se detiene su cancion y suena victoria_popeye.mp3 UNA vez.
+   No se usa el efecto de victoria generico en este combate.
+6. Pulsar F antes de acabar esos 14 segundos permite avanzar al dialogo, pero
+   no corta el audio de victoria. Al terminarlo comienza la pista del dialogo.
+   Si todavia estas en la arena, queda en silencio hasta que avances.
+7. En el desenlace se conservan las pistas sintetizadas de dialogo y combate
+   anteriores. No se asigno una cancion nueva a esa etapa.
+8. R reinicia tambien la cancion de la etapa; Nueva partida vuelve a Perry.
+   Una nueva victoria en otra partida permite escuchar otra vez la celebracion.
+9. M silencia/activa y el deslizador ajusta volumen. Al pausar o silenciar se
+   conserva la posicion de la cancion; al regresar continua donde iba.
+   Una celebracion que ya termino no vuelve a empezar por activar el sonido.
+
+CODIGO Y EFICIENCIA
+- QMediaPlayer y QAudioOutput reproducen musica. Son objetos hijos de AudioJuego.
+- Se reutiliza UN reproductor para los cinco archivos musicales (los tres
+  recibidos y las dos pistas del desenlace). Solo reproduce una fuente a la vez.
+- MP3 se decodifica progresivamente, evitando convertir canciones completas
+  a WAV y cargarlas todas como efectos en memoria.
+- Nueve QSoundEffect reutilizables conservan disparos, impactos, saltos, etc.
+  Sus WAV mantienen la correccion a 48000 Hz estereo PCM16.
+- Las escenas notifican captura, vidas agotadas y victoria mediante senales;
+  se conectan a slots con connect/SIGNAL/SLOT, como en los ejemplos de clase.
+- establecerMusica conserva la posicion si ya es la pista actual.
+  reiniciarMusica vuelve al inicio incluso si es el mismo archivo.
+- La victoria tiene una bandera por intento para evitar repeticiones por
+  fotograma; el cambio de musica del dialogo espera el fin de la celebracion.
+- No se crean reproductores al perder una vida, cambiar de nivel o reiniciar.
+- Sprites, fisicas, colisiones y salud se conservan: Popeye 10, Perry 6 al
+  iniciar el combate; el desenlace conserva los corazones restantes.
+
+VALIDACION
+MP3 inspeccionados y decodificados completos sin errores. Compilacion Linux
+con C++17/Qt6. Pruebas de carga del MP3 real desde recursos, bucles, posicion,
+pausa, reinicios, captura real, caidas al agua, transiciones y victoria unica.
+Las pruebas de transiciones colocan personajes en objetivos e inhabilitan
+obstaculos para aislar el audio; no son una prueba de dificultad jugada.
+El fin de la celebracion se simula en la prueba automatica de logica; la
+reproduccion audible y el controlador de Windows se comprueban en tu PC.
+
+SI NO SUENA
+Deja Sonido marcado y el volumen alto; haz clic dentro del juego para darle
+foco. Copia los mensajes Audio Perry de Application Output si falla.
+Para distribuir el ejecutable, Qt Multimedia necesita sus plugins y las
+bibliotecas multimedia del kit; usa el despliegue de Qt, no solo el EXE.
+
+Esta nota actualiza el comportamiento de audio descrito en los LEEME anteriores.
+Referencias: https://doc.qt.io/qt-6/qmediaplayer.html
+https://doc.qt.io/qt-6/qaudiooutput.html

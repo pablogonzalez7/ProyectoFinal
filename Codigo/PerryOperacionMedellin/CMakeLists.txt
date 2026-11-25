@@ -4,7 +4,7 @@ project(PerryOperacionMedellin LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
 
 qt_standard_project_setup()
 
@@ -29,6 +29,10 @@ qt_add_executable(PerryOperacionMedellin
     arenapopeye.h arenapopeye.cpp
     popeye.h popeye.cpp
     proyectilcombate.h proyectilcombate.cpp
+    desenlace.h desenlace.cpp
+    escobar.h escobar.cpp
+    audiojuego.h audiojuego.cpp
+    dificultad.h eventossonido.h
     memoriacombate.h
     liana.h liana.cpp
     plataforma.h plataforma.cpp
@@ -43,6 +47,7 @@ target_link_libraries(PerryOperacionMedellin
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Multimedia
 )
 
 include(GNUInstallDirs)
@@ -81,13 +86,28 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
         imagenes/panorama_hacienda.png
         imagenes/popeye.png
         imagenes/interior_hacienda.png
+        imagenes/escobar.png
+        sonidos/perry.mp3
+        sonidos/popeye.mp3
+        sonidos/victoria_popeye.mp3
+        sonidos/accion.wav
+        sonidos/alarma.wav
+        sonidos/camuflaje.wav
+        sonidos/derrota.wav
+        sonidos/disparo.wav
+        sonidos/escudo.wav
+        sonidos/impacto.wav
+        sonidos/llave.wav
+        sonidos/salto.wav
+        sonidos/sigilo.wav
+        sonidos/victoria.wav
 )
 
 # Opcional: pruebas de mecanicas, rutas, reinicios y teclado.
 option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    foreach(prueba IN ITEMS casa lianas margenes entrada popeye)
+    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica)
         qt_add_executable(pruebas_${prueba}
             pruebas/prueba_${prueba}.cpp
             mainwindow.h mainwindow.cpp mainwindow.ui
@@ -106,6 +126,10 @@ if(CONSTRUIR_PRUEBAS)
             arenapopeye.h arenapopeye.cpp
             popeye.h popeye.cpp
             proyectilcombate.h proyectilcombate.cpp
+            desenlace.h desenlace.cpp
+            escobar.h escobar.cpp
+            audiojuego.h audiojuego.cpp
+            dificultad.h eventossonido.h
             memoriacombate.h
             liana.h liana.cpp
             plataforma.h plataforma.cpp
@@ -116,7 +140,7 @@ if(CONSTRUIR_PRUEBAS)
             configuracion.h
         )
         target_include_directories(pruebas_${prueba} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-        target_link_libraries(pruebas_${prueba} PRIVATE Qt::Core Qt::Widgets)
+        target_link_libraries(pruebas_${prueba} PRIVATE Qt::Core Qt::Widgets Qt::Multimedia)
         qt_add_resources(pruebas_${prueba} "imagenes_pruebas_${prueba}"
             PREFIX "/"
             FILES
@@ -138,6 +162,21 @@ if(CONSTRUIR_PRUEBAS)
                 imagenes/panorama_hacienda.png
                 imagenes/popeye.png
                 imagenes/interior_hacienda.png
+                imagenes/escobar.png
+                sonidos/perry.mp3
+                sonidos/popeye.mp3
+                sonidos/victoria_popeye.mp3
+                sonidos/accion.wav
+                sonidos/alarma.wav
+                sonidos/camuflaje.wav
+                sonidos/derrota.wav
+                sonidos/disparo.wav
+                sonidos/escudo.wav
+                sonidos/impacto.wav
+                sonidos/llave.wav
+                sonidos/salto.wav
+                sonidos/sigilo.wav
+                sonidos/victoria.wav
         )
         add_test(NAME ${prueba} COMMAND pruebas_${prueba} ${CMAKE_CURRENT_BINARY_DIR}/capturas)
         set_tests_properties(${prueba} PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")

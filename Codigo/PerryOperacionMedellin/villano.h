@@ -2,6 +2,7 @@
 #define VILLANO_H
 
 #include "personaje.h"
+#include "dificultad.h"
 #include <QPixmap>
 #include <QList>
 #include <QPointF>
@@ -18,15 +19,20 @@ class Villano : public Personaje
 {
     Q_OBJECT
 public:
-    enum Estado { Patrullando, Persiguiendo, Investigando };
-    Villano(const Nivel *nivelActual, const Jugador *objetivo,
-            const QList<QPointF> &puntosPatrulla);
+    enum Estado
+    {
+        Patrullando,
+        Persiguiendo,
+        Investigando
+    };
+    Villano(const Nivel* nivelActual, const Jugador* objetivo, const QList<QPointF>& puntosPatrulla);
 
     void actualizar(qreal segundosTranscurridos) override;
-    void paint(QPainter *pintor, const QStyleOptionGraphicsItem *opciones,
-               QWidget *widget) override;
+    void paint(QPainter* pintor, const QStyleOptionGraphicsItem* opciones, QWidget* widget) override;
     void restablecer();
     void establecerAlarma(bool activa);
+    void establecerDificultad(Dificultad nueva);
+    void recibirAviso(const QPointF& posicionVista);
     Estado obtenerEstado() const;
     bool puedeVerJugador() const;
     qreal radioDeteccion() const;
@@ -36,6 +42,7 @@ private slots:
 
 signals:
     void estadoCambiado();
+    void jugadorDetectado(const QPointF& posicion);
 
 private:
     array<array<QPixmap, 2>, 4> sprites;
@@ -44,25 +51,28 @@ private:
     QPointF centro() const;
     void cambiarEstado(Estado nuevoEstado);
     void comprobarJugador();
-    void irHacia(const QPointF &destino);
+    void irHacia(const QPointF& destino);
+    bool revisarSiguienteSector();
     void seguirRuta(qreal segundosTranscurridos);
     void actualizarCono(bool forzar = false);
 
-    const Nivel *nivel;
-    const Jugador *jugador;
+    const Nivel* nivel;
+    const Jugador* jugador;
     const QList<QPointF> patrulla;
     QList<QPointF> camino;
     int indicePatrulla = 0;
     int pasoRuta = 0;
     Estado estado = Patrullando;
     bool alarma = false;
-    QPointF direccionVista{1, 0};
+    PerfilGuardia perfil;
+    int sectorBusqueda = 0;
+    QPointF direccionVista { 1, 0 };
     QPointF ultimaPosicionConocida;
     qreal esperaPercepcion = 0.0;
     qreal esperaBusqueda = 0.0;
     qreal esperaPatrulla = 0.0;
 
-    QGraphicsPathItem *cono;
+    QGraphicsPathItem* cono;
     static constexpr int cantidadRayos = 19;
     array<QPointF, cantidadRayos> direccionesRayos;
     QPointF ultimaPosicionCono;

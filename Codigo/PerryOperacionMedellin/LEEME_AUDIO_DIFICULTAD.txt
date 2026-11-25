@@ -1,0 +1,100 @@
+NOTA: el audio fue actualizado despues. Consulta LEEME_MUSICA_PERSONALIZADA.txt.
+Las reglas de dificultad de este archivo siguen vigentes.
+
+PERRY OPERACION MEDELLIN - AUDIO Y DIFICULTAD
+Actualizacion del 25 de noviembre de 2026
+
+INSTALACION
+1. Guarda una copia de tu proyecto y cierra el juego.
+2. Copia el contenido de la carpeta PerryOperacionMedellin del ZIP dentro
+   de tu carpeta del proyecto, junto a CMakeLists.txt. Reemplaza los archivos
+   y combina las carpetas imagenes, sonidos, herramientas y pruebas.
+   No crees otra carpeta PerryOperacionMedellin dentro de la existente.
+3. Abre CMakeLists.txt en Qt Creator, vuelve a ejecutar CMake y compila.
+4. Esta version necesita Qt Multimedia para el MISMO kit que usas al compilar.
+   Si falta Qt6MultimediaConfig.cmake: abre Qt Maintenance Tool, agrega
+   Qt Multimedia de esa version de Qt y vuelve a configurar el proyecto.
+   No necesitas instalar Python para jugar: los WAV ya vienen incluidos.
+
+CONTROLES NUEVOS
+- Barra superior: selecciona Facil, Normal o Dificil para la casa.
+- Nueva partida aplica la seleccion y reinicia TODO el recorrido desde casa.
+- R conserva la dificultad aplicada; cambiar solo el selector no altera
+  una partida en curso. El indicador de la casa muestra la dificultad activa.
+- M o la casilla Sonido: activar/silenciar musica y efectos juntos.
+- Deslizador: volumen general. Al perder el foco se pausan juego y audio.
+  Al regresar, la musica empieza de nuevo desde el inicio del bucle.
+
+DIFERENCIAS REALES ENTRE DIFICULTADES
+Facil: vision de 150 px y semiangulo de 40 grados. Al perderte de vista,
+el guardia vuelve a patrullar sin investigar tu ultima posicion.
+Normal (predeterminado): conserva la vision de 170 px y semiangulo de
+50 grados, e investiga la ultima posicion que vio antes de volver a patrullar.
+Dificil: vision de 200 px y semiangulo de 60 grados. Un avistamiento nuevo
+avisa a los otros guardias, que investigan esa posicion. Tras perderte,
+revisan hasta cuatro puntos cercanos accesibles y despues vuelven a patrullar.
+No conocen tu posicion oculta actual ni atraviesan paredes.
+El camuflaje cancela persecucion y busqueda en las tres dificultades.
+Se mantienen cuatro guardias, dos llaves, camuflaje de cuatro segundos,
+velocidades y duracion de la alarma. La dificultad no se basa en cambiar
+solo un contador o agregar enemigos.
+Estos guardias siguen reglas; el aprendizaje de Popeye es un sistema aparte.
+
+SONIDOS
+Dos bucles originales: sigilo y accion. Nueve efectos: llave, alarma,
+disparo, impacto, escudo, victoria, derrota, salto y camuflaje.
+Las escenas emiten sonidoSolicitado(int) cuando ocurre la accion; AudioJuego
+recibe la senal y reproduce el efecto correspondiente.
+Las pistas cambian con la etapa: casa/rio/dialogos usan sigilo;
+carretera/entrada/combates usan accion.
+Los archivos son WAV PCM estereo, 16 bits, 48000 Hz. Se sintetizaron para este
+proyecto con herramientas/generar_audio.py, sin grabaciones de terceros.
+El generador usa solo la biblioteca estandar de Python y permite reproducir
+los archivos; Python no forma parte de las dependencias del ejecutable.
+
+ESTRUCTURA Y EFICIENCIA PARA EXPLICAR
+- QTimer sigue conectado al slot moverFigura; el audio no agrega otro
+  temporizador de actualizacion de la partida.
+- AudioJuego es hijo QObject de MainWindow. Crea once QSoundEffect una sola
+  vez, los guarda en contenedores array y reutiliza sus fuentes cargadas.
+- Cada QSoundEffect es hijo de AudioJuego: Qt los destruye al cerrar la
+  ventana. No hay un new por disparo ni un delete despues de cada sonido.
+- Solo una pista de fondo puede reproducirse a la vez. Se limita la
+  repeticion del mismo efecto a una vez cada 90 ms para evitar saturacion.
+- Los reinicios conservan escenas, guardias y reproductores. Se restablece
+  su estado sin reconstruir todos los objetos.
+- Los guardias comparten un aviso al iniciar una persecucion, no en cada
+  fotograma. La busqueda tiene como maximo cuatro destinos candidatos y
+  reutiliza el contenedor de ruta y la navegacion existente.
+- El perfil de dificultad se aplica al iniciar partida. Las direcciones
+  del cono de vision se calculan al cambiar el perfil.
+- Los recursos de imagen y audio se integran con qt_add_resources. No se
+  necesitan rutas absolutas del computador del autor.
+
+COMPATIBILIDAD Y VALIDACION
+Se mantienen los sprites, escenarios y colisiones de la actualizacion
+anterior. La ventana agrega una barra sobre el juego; la vista conserva
+sus dimensiones. Popeye tiene 10 vidas y Perry inicia ese combate con 6.
+El desenlace conserva las vidas restantes y sus dos decisiones.
+Compilacion C++17/Qt 6 en Linux. Pruebas de las tres estrategias, camuflaje,
+avisos, busqueda limitada, reinicios sin duplicar objetos, recursos WAV,
+volumen, silencio, perdida de foco y controles de la interfaz.
+Regresiones de casa, carretera, rio/lianas, margenes, entrada, Popeye y final.
+El entorno de validacion no tiene salida de audio disponible: NO se ha
+validado la escucha. Falta compilar y jugar en Windows/MinGW, escuchar ambas
+pistas y efectos, probar M/volumen y cambiar de ventana para verificar pausa.
+
+PRUEBAS OPCIONALES
+CONSTRUIR_PRUEBAS=ON habilita las pruebas de CMake/CTest. No es necesario
+activarlo para jugar. prueba_audio_dificultad.cpp comprueba la integracion
+sin necesitar escuchar el audio; la verificacion audible es manual.
+
+REFERENCIA INVESTIGATIVA
+QSoundEffect y Qt Multimedia: https://doc.qt.io/qt-6/qsoundeffect.html
+La implementacion mantiene senales/slots, clases Qt y contenedores simples.
+
+LO QUE SIGUE
+Validar todo el recorrido en Windows y ajustar balance con partidas humanas.
+Preparar ejecutable con dependencias, UML, informe y material audiovisual
+segun Momento III. Este LEEME es una nota tecnica, no sustituye esos entregables
+ni afirma que el proyecto o la entrega esten al 100 por ciento.

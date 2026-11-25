@@ -1,4 +1,5 @@
 #include "carretera.h"
+#include "eventossonido.h"
 #include "recursossprites.h"
 #include "vehiculo.h"
 #include "obstaculo.h"
@@ -58,6 +59,7 @@ void Carretera::publicarInformacion() {
 void Carretera::activarEscudo() {
     if(estado!=Conduciendo || recarga>0) return;
     tiempoEscudo=ConfiguracionCarretera::duracionEscudo;
+    emit sonidoSolicitado(Sonido::Escudo);
     recarga=ConfiguracionCarretera::recargaEscudo;
     dibujoEscudo->setRect(vehiculo->sceneBoundingRect().adjusted(-8,-8,8,8)); dibujoEscudo->show();
     publicarInformacion();
@@ -69,6 +71,7 @@ void Carretera::activarDimensionador() {
 }
 void Carretera::finalizar(bool victoria,const QString &mensaje) {
     if(estado!=Conduciendo) return;
+    emit sonidoSolicitado(victoria ? Sonido::Victoria : Sonido::Derrota);
     estado=victoria ? Llegada : Derrota; vehiculo->establecerDireccion(0);
     avisoDisparo->hide(); dibujoEscudo->hide();
     for(auto *p:proyectiles) p->desactivar();
@@ -100,7 +103,7 @@ void Carretera::actualizarPersecucion(qreal paso) {
     avisoDisparo->setVisible(siguienteDisparo<=ConfiguracionCarretera::avisoDisparo);
     avisoDisparo->setLine(QLineF(origen,destinoDisparo));
     if(siguienteDisparo<=0) {
-        for(auto *p:proyectiles) if(!p->estaActivo()) { p->activar(origen,destinoDisparo); break; }
+        for(auto *p:proyectiles) if(!p->estaActivo()) { p->activar(origen,destinoDisparo); emit sonidoSolicitado(Sonido::Disparo); break; }
         siguienteDisparo=intervaloDisparo; avisoDisparo->hide();
     }
     for(auto *p:proyectiles) {
@@ -110,7 +113,7 @@ void Carretera::actualizarPersecucion(qreal paso) {
         if(tiempoEscudo>0 && p->sceneBoundingRect().intersects(cuerpo.adjusted(-8,-8,8,8))) p->desactivar();
         else if(p->sceneBoundingRect().intersects(cuerpo)) {
             p->desactivar();
-            if(inmunidad<=0) { --resistencia; inmunidad=0.8; }
+            if(inmunidad<=0) { --resistencia; inmunidad=0.8; emit sonidoSolicitado(Sonido::Impacto); }
             if(resistencia==0) { finalizar(false,"El carro quedo inutilizado!\nVolviendo a la casa..."); return; }
         } else if(!sceneRect().adjusted(-30,-30,30,30).intersects(p->sceneBoundingRect())) p->desactivar();
     }
@@ -139,7 +142,7 @@ void Carretera::actualizar(qreal segundos) {
             if(!cuerpo.intersects(objeto->sceneBoundingRect())) continue;
             if(objeto->obtenerTipo()==Obstaculo::Lodo) enLodo=true;
             else if(!objeto->fueGolpeado()) {
-                objeto->marcarGolpe(); vehiculo->recibirImpacto(); ++choques;
+                emit sonidoSolicitado(Sonido::Impacto); objeto->marcarGolpe(); vehiculo->recibirImpacto(); ++choques;
             }
         }
         const qreal velocidadAnterior=vehiculo->rapidezAvance();

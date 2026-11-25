@@ -1,0 +1,87 @@
+DESENLACE CON ESCOBAR — 25 de noviembre de 2026
+
+COMO CONTINUAR
+Vence a Popeye y pulsa F para hablar con Escobar. Mientras combatias, Escobar
+ya estaba sentado al fondo de la arena. Popeye conserva 10 puntos de vida y
+Perry comienza ese combate con 6 corazones.
+
+Perry recupera el dimensionador y anuncia que llevara a Escobar a la carcel.
+Pulsa F para escuchar la oferta. Luego elige con las teclas numericas:
+1: rechazar el trato. Escobar es entregado y Perry vuelve por el portal.
+2: aceptar el trato. Escobar traiciona a Perry y comienza un ultimo combate.
+La decision se toma una sola vez; las teclas mantenidas no la repiten.
+
+ULTIMO COMBATE
+Conservas los corazones que te quedaron al vencer a Popeye (maximo 6).
+Hay un aviso de 1.2 s antes del primer disparo: ya puedes moverte y saltar.
+A/D mueve; ESPACIO salta; E activa el escudo; F lanza una patada en el aire.
+El escudo dura 1 s y se recarga a los 6 s desde su activacion.
+Solo una patada a la cabeza incapacita a Escobar. El puno desde el suelo
+y los golpes al torso no lo hacen. F tiene 0.45 s de recarga.
+En esta escena no hay disparos del jugador ni superagilidad: la resolucion
+se basa en el salto, el escudo y la patada, como propone el documento.
+
+Escobar dispara cada 0.9 s con rapidez de 520 pixeles por segundo. Apunta
+a la posicion que Perry tenia al disparar: la bala no lo persigue despues.
+El vector normalizado permite tiros horizontales, diagonales y verticales.
+Tras un impacto, Perry tiene 0.9 s de inmunidad para no perder varias vidas
+por balas simultaneas. Si pierde, el juego vuelve desde cero a la casa.
+R tambien reinicia TODO el juego desde el desenlace.
+
+FINAL
+Si rechazas el trato o superas la traicion, Escobar queda bajo custodia.
+Se abre el portal y Perry camina hacia el para regresar a su dimension.
+La pantalla de mision completada permanece hasta pulsar F: nueva partida.
+La entrega a las autoridades y el regreso se representan mediante texto
+y la animacion del portal; no hay una cinematica de traslado a la carcel.
+
+ESTRUCTURA Y EFICIENCIA
+Desenlace es una QGraphicsScene. Escobar hereda Personaje, reutiliza su
+QGraphicsPixmapItem y guarda cuatro poses por orientacion en un array.
+La zona de cabeza es un QGraphicsRectItem hijo; las colisiones se resuelven
+con collidesWithItem, igual que la patada a los escoltas.
+El mismo QTimer de MainWindow llama moverFigura(), que actualiza la escena
+activa. Las transiciones usan SIGNAL/SLOT y conexiones encoladas.
+
+Se reutiliza la clase Proyectil. activar() ahora acepta una rapidez opcional;
+su valor por defecto sigue siendo 300, para conservar carretera y escoltas.
+Las ocho balas del desenlace se crean una vez, se activan y se desactivan.
+Los tres anillos del portal y el panel se crean una vez y cambian de estado.
+No se cargan imagenes ni se crean proyectiles dentro del ciclo de movimiento.
+MainWindow posee las escenas; cada escena elimina sus items, y cada item
+elimina sus hijos. Los arrays de apuntadores no vuelven a eliminarlos.
+Al repetir la partida se conservan las escenas creadas y se restablece su
+estado; se liberan al cerrar la ventana. Es un intercambio explicito entre
+mantener algunos objetos en memoria y evitar reconstruirlos en cada intento.
+
+El agente que aprende sigue siendo Popeye. Escobar tiene reglas fijas y
+no se presenta como un segundo agente con aprendizaje.
+
+ARTE
+imagenes/escobar.png es una hoja transparente nueva con cuatro poses:
+sentado, de pie, apuntando e incapacitado. Se genero con la generacion de
+imagenes integrada para este juego, y se incluyo en los recursos de Qt.
+Descripcion utilizada: antagonista de bigote y cabello oscuro, camisa clara,
+pantalon marron, pixel art de 16 bits, cuatro celdas iguales mirando a la
+izquierda, fondo transparente, sin texto ni sangre. El fondo reutiliza
+imagenes/interior_hacienda.png; el portal usa elipses Qt animadas.
+
+VALIDACION
+Pruebas automaticas en Qt 6 / Linux:
+- Dialogo, decision unica, entrega, portal y victoria por rechazo.
+- Aviso previo, tiros verticales/diagonales y conservacion de corazones.
+- Escudo, rechazo del golpe al torso/suelo y patada a la cabeza.
+- Victoria tras aceptar mediante controles publicos, sin editar posiciones
+  ni salud durante esa prueba de combate.
+- Derrota emitida una vez y cien reinicios con los mismos proyectiles/items.
+- MainWindow: F tras Popeye, elecciones, habilidades, final, regreso a casa
+  y reutilizacion del desenlace al recorrer de nuevo las transiciones.
+Las pruebas de colision y transiciones que aislan componentes colocan
+personajes directamente; la prueba de combate con controles no lo hace.
+Falta comprobar esta version en Windows/MinGW con partidas humanas.
+
+PENDIENTES DE ENTREGA (actualizado)
+Audio y dificultad estan implementados: consultar LEEME_AUDIO_DIFICULTAD.txt.
+Faltan revision final en Windows, ejecutable, UML, informe, trailer y video
+segun las instrucciones del momento III. Este archivo es una nota tecnica,
+no reemplaza el informe ni acredita que esos entregables esten terminados.

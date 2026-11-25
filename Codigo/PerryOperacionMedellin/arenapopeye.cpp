@@ -1,4 +1,5 @@
 #include "arenapopeye.h"
+#include "eventossonido.h"
 #include "popeye.h"
 #include "jugador.h"
 #include "proyectilcombate.h"
@@ -6,6 +7,7 @@
 #include "configuracionhacienda.h"
 #include <QApplication>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsRectItem>
 #include <QGraphicsLineItem>
 #include <QGraphicsSimpleTextItem>
@@ -26,6 +28,12 @@ ArenaPopeye::ArenaPopeye(QObject* padre)
     jugador->setZValue(5);
     jugador->setAcceptedMouseButtons(Qt::NoButton);
     addItem(popeye);
+    const QPixmap hojaEscobar(":/imagenes/escobar.png");
+    auto *escobarSentado=addPixmap(RecursosSprites::cargar(":/imagenes/escobar.png",QSize(64,72),
+        QRect(0,0,hojaEscobar.width()/4,hojaEscobar.height())));
+    escobarSentado->setPos(892,388);
+    escobarSentado->setZValue(3);
+    escobarSentado->setAcceptedMouseButtons(Qt::NoButton);
     pisos.reserve(superficies.size());
     for (int i = 0; i < int(superficies.size()); ++i)
     {
@@ -64,9 +72,10 @@ ArenaPopeye::ArenaPopeye(QObject* padre)
 void ArenaPopeye::reiniciar()
 {
     estado = EnJuego;
-    corazones = 5;
+    corazones = 6;
     siguienteIdentificador = 0;
     derrotaEmitida = false;
+    continuacionEmitida = false;
     inmunidad = 0;
     esperaDisparo = 0;
     esperaEnemigo = 2;
@@ -138,6 +147,7 @@ void ArenaPopeye::dispararA(const QPointF& destino)
             continue;
         bala->activar(
             jugador->sceneBoundingRect().center(), destino, false, Directo, ++siguienteIdentificador);
+        emit sonidoSolicitado(Sonido::Disparo);
         esperaDisparo = 1;
         return;
     }
@@ -146,6 +156,7 @@ void ArenaPopeye::activarEscudo()
 {
     if (estado != EnJuego || recargaEscudo > 0)
         return;
+    emit sonidoSolicitado(Sonido::Escudo);
     tiempoEscudo = 1;
     recargaEscudo = 6;
     escudo->show();
@@ -155,6 +166,7 @@ void ArenaPopeye::activarAgilidad()
 {
     if (estado != EnJuego || recargaAgilidad > 0)
         return;
+    emit sonidoSolicitado(Sonido::Camuflaje);
     tiempoAgilidad = 10;
     tiempoFatiga = 0;
     recargaAgilidad = 40;
@@ -181,6 +193,10 @@ void ArenaPopeye::actualizarHabilidades(qreal dt)
 }
 void ArenaPopeye::golpear()
 {
+    if (estado==Victoria) {
+        if (!continuacionEmitida) {continuacionEmitida=true;emit combateSuperado();}
+        return;
+    }
     if (estado != EnJuego || recargaGolpe > 0)
         return;
     danoGolpe = jugador->estaEnSuelo() ? 1 : 2;
@@ -204,6 +220,7 @@ void ArenaPopeye::actualizarGolpe()
     if (!golpeUsado && zonaGolpe->collidesWithItem(popeye->obtenerImagen()))
     {
         popeye->recibirDano(danoGolpe);
+        emit sonidoSolicitado(Sonido::Impacto);
         golpeUsado = true;
     }
 }
@@ -243,6 +260,7 @@ void ArenaPopeye::dispararEnemigo(TipoAtaque tipo)
             continue;
         bala->activar(origen, jugador->sceneBoundingRect().center(), true, tipo, ++siguienteIdentificador);
         popeye->mostrarDisparo();
+        emit sonidoSolicitado(Sonido::Disparo);
         return;
     }
 }
@@ -263,6 +281,7 @@ void ArenaPopeye::recibirImpacto()
     if (inmunidad > 0 || estado != EnJuego)
         return;
     --corazones;
+    emit sonidoSolicitado(Sonido::Impacto);
     inmunidad = 0.9;
     if (!corazones)
     {
@@ -288,6 +307,7 @@ void ArenaPopeye::actualizarProyectiles(qreal dt)
         if (bala->collidesWithItem(popeye->obtenerImagen()))
         {
             popeye->recibirDano(1);
+            emit sonidoSolicitado(Sonido::Impacto);
             bala->desactivar();
             continue;
         }
@@ -336,6 +356,7 @@ void ArenaPopeye::comprobarVictoria()
     if (estado != EnJuego || popeye->resistenciaActual() > 0)
         return;
     estado = Victoria;
+    emit victoriaConseguida();
     establecerDireccion(0);
     aviso->hide();
     escudo->hide();
@@ -347,7 +368,6 @@ void ArenaPopeye::comprobarVictoria()
         b->desactivar();
     emit controlesLiberados();
     publicarInformacion();
-    emit combateSuperado();
 }
 void ArenaPopeye::actualizarPaso(qreal dt)
 {
@@ -386,7 +406,7 @@ void ArenaPopeye::actualizarPaso(qreal dt)
         {
             avisoEspecial = 1;
             aviso->show();
-            QApplication::beep();
+            emit sonidoSolicitado(Sonido::Alarma);
         }
     }
     actualizarGolpe();
@@ -431,8 +451,7 @@ void ArenaPopeye::actualizar(qreal segundos)
 QString ArenaPopeye::informacionActual() const
 {
     if (estado == Victoria)
-        return "Popeye incapacitado! Recuperaste el dimensionador.\nEl desenlace con Escobar es la siguiente "
-               "parte. R: repetir combate.";
+        return "Popeye incapacitado! Recuperaste el dimensionador.\nF: hablar con Escobar | R: repetir combate.";
     if (estado == Derrota)
         return "Sin corazones. Volviendo al inicio de la hacienda...";
     const QString esc = tiempoEscudo > 0 ? "ACTIVO"
@@ -442,7 +461,7 @@ QString ArenaPopeye::informacionActual() const
         : tiempoFatiga > 0                 ? QString("FATIGA %1 s").arg(qCeil(tiempoFatiga))
         : recargaAgilidad > 0              ? QString::number(qCeil(recargaAgilidad)) + " s"
                                            : "LISTA (Q)";
-    return QString("Corazones: %1/5 | Popeye: %2/%5 | Escudo: %3 | Agilidad: %4\nApunta y haz clic (1 "
+    return QString("Corazones: %1/6 | Popeye: %2/%5 | Escudo: %3 | Agilidad: %4\nApunta y haz clic (1 "
                    "disparo/s). F: puno en suelo, patada en aire. Anticipa sus saltos.")
         .arg(corazones)
         .arg(popeye->resistenciaActual())

@@ -20,8 +20,8 @@ enemigos un 20%; no aumenta la altura de salto. La siguiente activacion
 queda disponible 30 s despues de terminar el efecto (40 s desde su inicio).
 R: repetir combate. Si ya perdiste, regresa al inicio de la hacienda.
 
-Perry tiene cinco corazones, con 0.9 s de proteccion tras recibir un impacto.
-Popeye tiene 30 puntos de resistencia. Estos son valores de balance inicial.
+Perry tiene seis corazones, con 0.9 s de proteccion tras recibir un impacto.
+Popeye tiene 10 puntos de resistencia. Estos son valores de balance inicial.
 Puedes golpearlo durante sus saltos: no se vuelve invulnerable ni se teletransporta.
 Las plataformas se atraviesan al subir y sostienen a los personajes al bajar.
 Una advertencia visible y el aviso sonoro del sistema anticipan el disparo
@@ -31,7 +31,8 @@ contra el suelo inmediatamente al dispararla. Las plataformas bloquean balas.
 
 AL GANAR O PERDER
 Al vencer, Popeye queda incapacitado y se anuncia la recuperacion del
-dimensionador. R permite repetir. El desenlace con Escobar aun NO esta hecho.
+dimensionador. F abre el desenlace con Escobar; R permite repetir el combate.
+Consulta LEEME_DESENLACE.txt para las dos decisiones y sus consecuencias.
 Al perder, vuelves al inicio de la hacienda, sin repetir casa y carretera.
 Al terminar la pelea, los personajes que estaban en el aire aterrizan.
 
@@ -87,7 +88,7 @@ Compilacion C++17 con Qt 6 en Linux y pruebas automaticas:
 Falta probar esta version en Qt Creator/MinGW de Windows y ajustar dificultad
 con partidas humanas. Una prueba automatica no sustituye esa comprobacion.
 
-PENDIENTE
-Desenlace con Escobar, musica/efectos propios, revision final del entregable
-y grabacion. Los LEEME anteriores describen sus respectivas etapas; este
-archivo actualiza el estado del combate contra Popeye.
+ACTUALIZACION POSTERIOR
+Audio y dificultad implementados: consultar LEEME_AUDIO_DIFICULTAD.txt.
+El cierre de la historia esta descrito en LEEME_DESENLACE.txt.
+Los LEEME anteriores documentan sus respectivas etapas.

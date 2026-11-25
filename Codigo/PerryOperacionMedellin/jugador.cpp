@@ -1,4 +1,5 @@
 #include "jugador.h"
+#include "eventossonido.h"
 #include "nivel.h"
 #include "configuracion.h"
 #include "configuracionhacienda.h"
@@ -276,6 +277,7 @@ void Jugador::saltar()
     if (!modoPlataformas || !enSuelo) return;
     vueloInercial = false;
     velocidadVertical = -ConfiguracionHacienda::impulsoSalto;
+    emit sonidoSolicitado(Sonido::Salto);
     enSuelo = false;
     mostrarSpriteActual();
 }

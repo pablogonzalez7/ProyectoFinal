@@ -1,4 +1,5 @@
 #include "hacienda.h"
+#include "eventossonido.h"
 #include "jugador.h"
 #include "plataforma.h"
 #include "hipopotamo.h"
@@ -180,6 +181,7 @@ void Hacienda::actualizarPaso(qreal dt)
     if (jugador->sceneBoundingRect().bottom() > alturaAgua) { perderVida(); return; }
     if (apoyo == plataformas.back() && jugador->x() >= 4200) {
         estado = Completado;
+        emit sonidoSolicitado(Sonido::Victoria);
         establecerDireccion(0);
         emit controlesLiberados();
         publicarInformacion();
@@ -194,6 +196,8 @@ void Hacienda::perderVida()
     lianaActual = nullptr;
     buscandoAgarre = false;
     --vidas;
+    if (vidas == 0) emit vidasAgotadas();
+    emit sonidoSolicitado(Sonido::Impacto);
     estado = Recuperando;
     espera = 1.2;
     apoyo = nullptr;

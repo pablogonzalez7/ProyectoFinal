@@ -27,8 +27,10 @@ public:
     Estado obtenerEstado() const;
     int vidasRestantes() const;
 signals:
+    void sonidoSolicitado(int evento);
     void informacionCambiada(const QString &texto);
     void controlesLiberados();
+    void vidasAgotadas();
     void rioSuperado();
     void lianasSuperadas();
 protected:

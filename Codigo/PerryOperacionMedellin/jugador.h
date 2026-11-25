@@ -46,6 +46,7 @@ public:
 
 
 signals:
+    void sonidoSolicitado(int evento);
     void camuflajeCambiado(bool camuflado);
 
 private:

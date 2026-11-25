@@ -75,10 +75,12 @@ public:
         return superficies;
     }
 signals:
+    void sonidoSolicitado(int evento);
     void informacionCambiada(const QString& texto);
     void controlesLiberados();
     void partidaPerdida();
     void combateSuperado();
+    void victoriaConseguida();
 
 protected:
     void drawBackground(QPainter*, const QRectF&) override;
@@ -113,11 +115,11 @@ private:
     QGraphicsSimpleTextItem* aviso;
     QPixmap fondo;
     Estado estado = EnJuego;
-    int corazones = 5, siguienteIdentificador = 0;
+    int corazones = 6, siguienteIdentificador = 0;
     qreal inmunidad = 0, esperaDisparo = 0, esperaEnemigo = 2;
     qreal tiempoEscudo = 0, recargaEscudo = 0, tiempoAgilidad = 0, tiempoFatiga = 0, recargaAgilidad = 0;
     qreal tiempoGolpe = 0, recargaGolpe = 0, siguienteEspecial = 7, avisoEspecial = 0, esperaDerrota = 0;
-    bool golpeUsado = false, derrotaEmitida = false;
+    bool golpeUsado = false, derrotaEmitida = false, continuacionEmitida = false;
     int danoGolpe = 0;
     QPointF objetivoMouse { 800, 400 };
     QString ultimoTexto;

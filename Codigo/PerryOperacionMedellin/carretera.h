@@ -35,6 +35,7 @@ public:
     int cantidadChoques() const { return choques; }
     bool estaEnLodo() const { return enLodo; }
 signals:
+    void sonidoSolicitado(int evento);
     void partidaPerdida();
     void haciendaAlcanzada();
     void entradaHabilitada();

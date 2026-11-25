@@ -1,0 +1,42 @@
+CORRECCION DE AUDIO - 25 NOVIEMBRE 2026
+
+La captura muestra QAudioFormat not supported by QAudioDevice y el aviso
+QRtAudioEngine needs to be called with a supported format. Qt Multimedia
+esta funcionando, pero la salida rechaza el formato solicitado.
+La captura no identifica que parametro (frecuencia, canales o tipo de
+muestra) rechazo el dispositivo; este parche cambia el formato para probar
+una configuracion comun, sin asegurar compatibilidad con todo dispositivo.
+
+CAMBIOS
+Los once WAV pasan de 22050 Hz mono a 48000 Hz estereo PCM de 16 bits.
+Conservan melodias, frecuencias musicales y duraciones; ambos canales
+contienen el mismo sonido. El generador queda actualizado al nuevo formato.
+Se mantiene QSoundEffect y la reutilizacion de sus once objetos.
+AudioJuego imprime una sola vez la salida, su formato preferido y si
+acepta PCM 48000 Hz estereo. No modifica configuracion de sonido de Windows.
+
+APLICAR SOBRE LA ACTUALIZACION DE AUDIO Y DIFICULTAD
+1. Cierra el juego.
+2. Copia el contenido de PerryOperacionMedellin del ZIP sobre tu carpeta
+   actual, donde estan CMakeLists.txt y mainwindow.cpp. Reemplaza archivos.
+   Combina la carpeta sonidos; no crees otra carpeta de proyecto anidada.
+3. En Qt Creator: Build > Rebuild Project. Espera a que termine.
+   Los WAV estan dentro del ejecutable como recursos: copiarlos sin volver
+   a compilar no cambia el sonido del programa que ya estaba construido.
+4. Ejecuta. Deja Sonido marcado, volumen a la mitad o mas y pulsa dentro
+   del juego para que tenga el foco. Al cambiar de ventana se pausa el audio.
+
+SI EL ERROR CONTINUA
+Copia las lineas de Application Output que comienzan con Audio Perry y las
+que contienen QAudioSink/QRtAudioEngine. Incluye si usas parlantes, salida
+HDMI o audifonos Bluetooth. Esos datos permiten adaptar la solucion al
+formato real de la salida en lugar de seguir cambiando valores a ciegas.
+
+VALIDACION
+WAV verificados: PCM16, 48000 Hz, dos canales identicos, sin saturacion,
+duraciones conservadas. Codigo compilado en Linux; pruebas de recursos y
+controles de audio. No se puede verificar escucha ni el controlador de
+Windows desde este entorno. La confirmacion final debe hacerse en tu PC.
+
+Referencia Qt (recomienda 48000 Hz para SoundEffect):
+https://doc.qt.io/qt-6/qml-qtmultimedia-soundeffect.html
