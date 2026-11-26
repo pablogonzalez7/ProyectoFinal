@@ -101,7 +101,7 @@ int main(int argc, char **argv)
         exigir(audioUnidad.findChildren<QMediaPlayer*>().size() == 1, "Duplica reproductores");
         cout << "OK MP3 real, bucles, continuidad, pausa, reinicio y victoria unica" << endl;
         MainWindow ventana;
-        ventana.show();
+        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* audio = ventana.findChild<AudioJuego*>();
@@ -178,6 +178,9 @@ int main(int argc, char **argv)
             app.processEvents();
             auto* arena = ventana.findChild<ArenaPopeye*>();
             exigir(arena, "No entra a arena");
+            exigir(arena->corazonesRestantes() == 5 && arena->informacionActual().contains("/5"),
+                "Perry no inicia con cinco vidas en el HUD");
+            exigir(arena->obtenerPopeye()->resistenciaActual() == 10, "Cambio vidas de Popeye");
             exigir(audio->pistaActual() == Sonido::Popeye && inicios == antesDeTransiciones + 2,
                 "No cambia una vez a la musica de Popeye");
             return arena;
@@ -186,28 +189,35 @@ int main(int argc, char **argv)
         arena->obtenerPopeye()->recibirDano(10);
         arena->actualizar(paso);
         app.processEvents();
-        exigir(vista->scene() == arena, "Sale de la arena sin pulsar F");
-        exigir(audio->pistaActual() == Sonido::VictoriaPopeye && victorias == 1, "No reproduce victoria una vez");
+        exigir(vista->scene() == arena, "Sale de la arena sin pulsar Enter");
+        exigir(victorias == 0 && audio->obtenerMusica()->playbackState() == QMediaPlayer::StoppedState,
+            "Audio unico suena antes de hablar con Escobar");
         for (int i=0;i<120;++i) arena->actualizar(paso);
-        exigir(victorias == 1, "Repite victoria por fotograma");
+        exigir(victorias == 0, "Suena mientras espera para hablar");
         auto tecla = [&](int codigo, bool repetida = false)
         {
             QKeyEvent evento(QEvent::KeyPress, codigo, Qt::NoModifier, QString(), repetida);
             QApplication::sendEvent(vista, &evento);
         };
-        tecla(Qt::Key_F);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
+        tecla(Qt::Key_Return);
         app.processEvents();
         auto* final = ventana.findChild<Desenlace*>();
-        exigir(final && vista->scene() == final, "F no conecta al desenlace");
-        exigir(audio->pistaActual() == Sonido::VictoriaPopeye, "F corta el sonido de victoria");
+        exigir(final && vista->scene() == final, "Enter no conecta al desenlace");
+        exigir(audio->pistaActual() == Sonido::VictoriaPopeye && victorias == 1,
+            "Entrar al dialogo no dispara audio una vez");
         QMetaObject::invokeMethod(audio, "revisarEstadoMusica", Qt::DirectConnection,
             Q_ARG(QMediaPlayer::MediaStatus,QMediaPlayer::EndOfMedia));
-        exigir(audio->pistaActual() == Sonido::Sigilo, "No retoma musica de dialogo al terminar victoria");
-        exigir(ventana.findChildren<Desenlace*>().size() == 1, "Crea dos escenas al repetir F");
-        tecla(Qt::Key_F, true);
+        exigir(audio->pistaActual() == Sonido::VictoriaPopeye && victorias == 1,
+            "Vuelve la musica de fondo al terminar el audio unico");
+        audio->establecerPausa(true);
+        audio->establecerPausa(false);
+        exigir(audio->obtenerMusica()->playbackState() != QMediaPlayer::PlayingState,
+            "Pausa vuelve a reproducir audio terminado");
+        exigir(ventana.findChildren<Desenlace*>().size() == 1, "Crea dos escenas al repetir Enter");
+        tecla(Qt::Key_Return, true);
         exigir(final->obtenerEstado() == Desenlace::Dialogo, "Autorrepeticion salta dialogo");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_2);
         avanzar(*final, 1.22);
         exigir(final->obtenerEstado() == Desenlace::Combate, "Teclas no aceptan trato");
@@ -216,7 +226,7 @@ int main(int argc, char **argv)
         exigir(final->escudoActivo() && !final->obtenerJugador()->estaEnSuelo(), "Teclado no activa defensa");
         // Perder mientras el desenlace esta activo reinicia la casa.
         final->reiniciar(1);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_2);
         avanzar(*final, 1.22);
         final->obtenerEscobar()->setPos(-2000, 388);
@@ -231,20 +241,20 @@ int main(int argc, char **argv)
         arena = irHastaArena();
         arena->obtenerPopeye()->recibirDano(10);
         arena->actualizar(paso);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         app.processEvents();
         exigir(vista->scene() == final && ventana.findChildren<Desenlace*>().size() == 1,
             "No reutiliza desenlace en otra partida");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_1);
         avanzar(*final, 8);
         exigir(final->obtenerEstado() == Desenlace::Victoria, "Rechazar desde ventana no termina");
         ventana.grab().save(carpeta + "/ventana_final.png");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         app.processEvents();
         exigir(vista->scene() == nivel && nivel->obtenerEstado() == Nivel::EnJuego,
             "Nueva partida no vuelve a casa");
-        cout << "OK MainWindow: F, decision, habilidades, final y reinicio desde casa" << endl;
+        cout << "OK MainWindow: Enter, decision, habilidades, final y reinicio desde casa" << endl;
 
         cout << "OK musica integrada con capturas, vidas, transiciones y victoria" << endl;
     } catch(const exception &error) { cerr << "ERROR: " << error.what() << endl; return 1; }

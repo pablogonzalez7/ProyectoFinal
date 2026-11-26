@@ -7,7 +7,7 @@ Codigo/PerryOperacionMedellin y reemplaza los archivos existentes.
 Combina la carpeta imagenes con la actual: conserva perry.png.
 No crees clases manualmente; CMakeLists.txt registra recursossprites.cpp
 junto con todos los nuevos PNG. Deja que Qt reconfigure y pulsa Ctrl+R.
-Tambien se incluye la actualizacion anterior de hipopotamos y entrada con F.
+Tambien se incluye la actualizacion anterior de hipopotamos y entrada con Enter.
 
 RECURSOS NUEVOS
 imagenes/policias.png: cuatro direcciones y dos poses. Los guardias de la
@@ -29,7 +29,7 @@ Se conservan las cajas de colision: guardia 32x40, carro 48x84, bala 8x14,
 barrera 96x56 y lodo 112x150. La colision continua siendo rectangular,
 incluidos los bordes transparentes del sprite dentro de esas cajas.
 No cambian velocidades, danos, rozamiento, vidas ni alcance de los guardias.
-A los 1200 metros, pulsa F una vez para entrar a la hacienda.
+A los 1200 metros, pulsa Enter una vez para entrar a la hacienda.
 
 VALIDACION
 Compilacion con Qt 6 en Linux, carga de los ocho PNG del juego y revision

@@ -1,0 +1,37 @@
+MENU CON SPRITES Y TITULO ANIMADO
+
+INSTALACION
+Aplicar sobre Actualizacion_Menu_Dificultad_Enter ya instalada.
+1. Cierra el juego.
+2. Copia el contenido de PerryOperacionMedellin de este ZIP sobre tu carpeta
+   actual del proyecto, donde esta CMakeLists.txt. Combina y reemplaza archivos.
+3. En Qt Creator ejecuta CMake y Build > Rebuild Project.
+No crees una segunda carpeta PerryOperacionMedellin dentro de la actual.
+Los PNG originales ya estan en tu proyecto; este parche los reutiliza.
+
+CAMBIOS
+- Titulo grande con degradado, contorno oscuro y movimiento suave.
+- Fondo tropical, casa con habitaciones y muebles, hacienda, carretera y rio.
+- Aparecen Perry, policia, ambos carros, bala, barrera, lodo, lianas,
+  hipopotamo, Popeye y Escobar, usando los 19 PNG existentes.
+- Perry, policia, hipopotamo, Popeye y Escobar cambian de pose.
+- Las opciones quedan sobre un panel oscuro para facilitar la lectura.
+- Arriba/abajo eligen Facil, Normal o Dificil; Enter confirma.
+- Se conservan los modos existentes y la tecla Enter durante todo el juego.
+
+CODIGO Y EFICIENCIA
+MenuAnimado hereda de QWidget. Su QTimer emite timeout() al slot animar().
+El fondo compuesto y el titulo se preparan una vez como QPixmap.
+Los fotogramas se guardan en array<QPixmap,...> y se reutilizan.
+paintEvent dibuja los recursos preparados: no carga archivos ni crea items.
+La decoracion se actualiza cada 80 ms, solo mientras el menu es visible.
+hideEvent detiene su temporizador al comenzar la partida; showEvent lo reanuda.
+Los objetos Qt tienen padres y los QPixmap se liberan al destruir la clase.
+No se ejecutan colisiones, IA ni fisicas para los personajes decorativos.
+
+VALIDACION
+Compilacion Linux Qt 6/C++17. Pruebas de menu, ambos Enter, flechas, tres modos,
+reinicio, reutilizacion y temporizador decorativo detenido durante el juego.
+Pruebas de musica y transiciones aprobadas. Vista previa revisada.
+Falta comprobar la apariencia y ejecucion en Windows.
+El problema de salida de sonido de Windows no se modifica con este parche.

@@ -186,7 +186,7 @@ int main(int argc, char** argv)
         cout << "OK derrota unica y cien reinicios reutilizando objetos" << endl;
         // Transiciones de la ventana; los combates se prueban por separado arriba.
         MainWindow ventana;
-        ventana.show();
+        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* nivel = ventana.findChild<Nivel*>();
@@ -242,21 +242,21 @@ int main(int argc, char** argv)
         arena->obtenerPopeye()->recibirDano(10);
         arena->actualizar(paso);
         app.processEvents();
-        exigir(vista->scene() == arena, "Sale de la arena sin pulsar F");
+        exigir(vista->scene() == arena, "Sale de la arena sin pulsar Enter");
         auto tecla = [&](int codigo, bool repetida = false)
         {
             QKeyEvent evento(QEvent::KeyPress, codigo, Qt::NoModifier, QString(), repetida);
             QApplication::sendEvent(vista, &evento);
         };
-        tecla(Qt::Key_F);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
+        tecla(Qt::Key_Return);
         app.processEvents();
         auto* final = ventana.findChild<Desenlace*>();
-        exigir(final && vista->scene() == final, "F no conecta al desenlace");
-        exigir(ventana.findChildren<Desenlace*>().size() == 1, "Crea dos escenas al repetir F");
-        tecla(Qt::Key_F, true);
+        exigir(final && vista->scene() == final, "Enter no conecta al desenlace");
+        exigir(ventana.findChildren<Desenlace*>().size() == 1, "Crea dos escenas al repetir Enter");
+        tecla(Qt::Key_Return, true);
         exigir(final->obtenerEstado() == Desenlace::Dialogo, "Autorrepeticion salta dialogo");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_2);
         avanzar(*final, 1.22);
         exigir(final->obtenerEstado() == Desenlace::Combate, "Teclas no aceptan trato");
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
         exigir(final->escudoActivo() && !final->obtenerJugador()->estaEnSuelo(), "Teclado no activa defensa");
         // Perder mientras el desenlace esta activo reinicia la casa.
         final->reiniciar(1);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_2);
         avanzar(*final, 1.22);
         final->obtenerEscobar()->setPos(-2000, 388);
@@ -280,20 +280,20 @@ int main(int argc, char** argv)
         arena = irHastaArena();
         arena->obtenerPopeye()->recibirDano(10);
         arena->actualizar(paso);
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         app.processEvents();
         exigir(vista->scene() == final && ventana.findChildren<Desenlace*>().size() == 1,
             "No reutiliza desenlace en otra partida");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         tecla(Qt::Key_1);
         avanzar(*final, 8);
         exigir(final->obtenerEstado() == Desenlace::Victoria, "Rechazar desde ventana no termina");
         ventana.grab().save(carpeta + "/ventana_final.png");
-        tecla(Qt::Key_F);
+        tecla(Qt::Key_Return);
         app.processEvents();
         exigir(vista->scene() == nivel && nivel->obtenerEstado() == Nivel::EnJuego,
             "Nueva partida no vuelve a casa");
-        cout << "OK MainWindow: F, decision, habilidades, final y reinicio desde casa" << endl;
+        cout << "OK MainWindow: Enter, decision, habilidades, final y reinicio desde casa" << endl;
     }
     catch (const exception& error)
     {

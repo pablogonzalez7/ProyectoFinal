@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "menuanimado.h"
 #include "ui_mainwindow.h"
 #include "configuracion.h"
 #include "jugador.h"
@@ -14,6 +15,8 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QSlider>
+#include <QListWidget>
+#include <QStackedWidget>
 #include <QHBoxLayout>
 
 #include <QEvent>
@@ -55,7 +58,8 @@ MainWindow::MainWindow(QWidget* padre)
 
     temporizador->setTimerType(Qt::PreciseTimer);
     tiempo.start();
-    temporizador->start(16); // Aproximadamente 60 actualizaciones por segundo.
+    temporizador->setInterval(16); // Aproximadamente 60 actualizaciones por segundo.
+    mostrarMenu();
 }
 
 void MainWindow::prepararVentana()
@@ -94,7 +98,7 @@ void MainWindow::prepararVentana()
     selectorDificultad->setObjectName("selectorDificultad");
     selectorDificultad->addItems({ "Facil", "Normal", "Dificil" });
     selectorDificultad->setCurrentIndex(1);
-    selectorDificultad->setToolTip("Se aplica al pulsar Nueva partida. Reinicia todo el juego.");
+    selectorDificultad->setToolTip("Nueva partida abre el menu para confirmar la dificultad.");
     opciones->addWidget(selectorDificultad);
     auto* nuevaPartida = new QPushButton("Nueva partida", barra);
     nuevaPartida->setObjectName("nuevaPartida");
@@ -123,13 +127,12 @@ void MainWindow::prepararVentana()
     distribucion->addWidget(indicador);
     distribucion->addWidget(vista);
     distribucion->addWidget(controles);
-    setCentralWidget(contenedor);
+    prepararMenu(contenedor);
     setFixedSize(ConfiguracionCasa::anchoVista, ConfiguracionCasa::altoVista + 120);
 
     // La vista recibe las teclas; el filtro tambien detecta cuando pierde foco.
     vista->setFocusPolicy(Qt::StrongFocus);
     vista->installEventFilter(this);
-    vista->setFocus();
     vista->centerOn(jugador);
 }
 
@@ -154,7 +157,22 @@ void MainWindow::limpiarTeclado()
 
 bool MainWindow::eventFilter(QObject* objeto, QEvent* evento)
 {
+    if (objeto == listaModos && enMenu
+        && (evento->type() == QEvent::KeyPress || evento->type() == QEvent::KeyRelease))
+    {
+        auto* tecla = static_cast<QKeyEvent*>(evento);
+        if (tecla->key() == Qt::Key_Return || tecla->key() == Qt::Key_Enter)
+        {
+            if (evento->type() == QEvent::KeyPress && !tecla->isAutoRepeat())
+                elegirModo();
+            return true; // Esta pulsacion solo elige el modo.
+        }
+        // QListWidget ya permite seleccionar con las flechas arriba y abajo.
+    }
     if (objeto != vista)
+        return QMainWindow::eventFilter(objeto, evento);
+
+    if (enMenu)
         return QMainWindow::eventFilter(objeto, evento);
 
     if (evento->type() == QEvent::FocusOut)
@@ -202,6 +220,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* evento)
 
 bool MainWindow::procesarTecla(QKeyEvent* evento)
 {
+    if (enMenu) return true;
     // Una pulsacion larga no debe activar varias veces salto o camuflaje.
     if (evento->isAutoRepeat())
         return true;
@@ -232,7 +251,8 @@ bool MainWindow::procesarTecla(QKeyEvent* evento)
             if (presionada)
                 desenlace->activarEscudo();
             break;
-        case Qt::Key_F:
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
             if (presionada)
                 desenlace->continuar();
             break;
@@ -329,7 +349,8 @@ bool MainWindow::procesarTecla(QKeyEvent* evento)
         if (enCarretera && presionada)
             carretera->activarEscudo();
         return true;
-    case Qt::Key_F:
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
         if (enArena && presionada)
             arena->golpear();
         else if (enEntrada && presionada)
@@ -380,6 +401,7 @@ void MainWindow::actualizarDireccion()
 
 void MainWindow::moverFigura()
 {
+    if (enMenu) return;
     // Se mide el tiempo real: la rapidez no depende de cuantos timeout lleguen.
     const qreal segundos = tiempo.restart() / 1000.0;
     if (enDesenlace)
@@ -413,6 +435,11 @@ void MainWindow::moverFigura()
 
 void MainWindow::actualizarTitulo()
 {
+    if (enMenu)
+    {
+        setWindowTitle("Perry: Operacion Medellin - Elegir modo");
+        return;
+    }
     if (enDesenlace)
     {
         setWindowTitle("Perry: Operacion Medellin - Desenlace");
@@ -454,7 +481,7 @@ void MainWindow::mostrarInformacionHacienda(const QString& texto)
 void MainWindow::mostrarLlegadaHacienda()
 {
     if (enCarretera && carretera->obtenerEstado() == Carretera::Llegada)
-        controles->setText("F: bloquear la entrada y pasar al nivel 2    |    R: volver a la casa");
+        controles->setText("Enter: bloquear la entrada y pasar al nivel 2    |    R: volver a la casa");
 }
 void MainWindow::responderDerrotaCarretera()
 {
@@ -464,7 +491,7 @@ void MainWindow::responderDerrotaCarretera()
 
 void MainWindow::entrarCarretera()
 {
-    if (enCarretera || enHacienda || enEntrada || enArena || enDesenlace
+    if (enMenu || enCarretera || enHacienda || enEntrada || enArena || enDesenlace
         || escena->obtenerEstado() != Nivel::Completado)
         return;
     limpiarTeclado();
@@ -486,13 +513,14 @@ void MainWindow::entrarCarretera()
     vista->setScene(carretera);
     vista->centerOn(carretera->sceneRect().center());
     indicador->setText(carretera->informacionActual());
-    controles->setText("A/D: conducir    |    E: escudo    |    F: entrar al nivel 2 al llegar a 1200 m    | "
+    controles->setText("A/D: conducir    |    E: escudo    |    Enter: entrar al nivel 2 al llegar a 1200 m    | "
                        "   R: reiniciar");
     setWindowTitle("Perry: Operacion Medellin - Carretera");
     tiempo.start();
 }
 void MainWindow::volverCasa()
 {
+    if (enMenu) return;
     limpiarTeclado();
     enCarretera = false;
     enHacienda = false;
@@ -512,7 +540,7 @@ void MainWindow::volverCasa()
 
 void MainWindow::entrarHacienda()
 {
-    if (!enCarretera || carretera->obtenerEstado() != Carretera::Llegada)
+    if (enMenu || !enCarretera || carretera->obtenerEstado() != Carretera::Llegada)
         return;
     limpiarTeclado();
     if (!hacienda)
@@ -543,7 +571,7 @@ void MainWindow::entrarHacienda()
 
 void MainWindow::entrarZonaEscoltas()
 {
-    if (!enHacienda || hacienda->obtenerEstado() != Hacienda::Completado)
+    if (enMenu || !enHacienda || hacienda->obtenerEstado() != Hacienda::Completado)
         return;
     limpiarTeclado();
     if (!entrada)
@@ -566,12 +594,13 @@ void MainWindow::entrarZonaEscoltas()
     vista->centerOn(entrada->sceneRect().center());
     indicador->setText(entrada->informacionActual());
     controles->setText(
-        "A/D: mover | ESPACIO: saltar | C: transformarse | F: patada / entrar | R: reintentar escoltas");
+        "A/D: mover | ESPACIO: saltar | C: transformarse | Enter: patada / entrar | R: reintentar escoltas");
     setWindowTitle("Perry: Operacion Medellin - Entrada vigilada");
     tiempo.start();
 }
 void MainWindow::reiniciarHacienda()
 {
+    if (enMenu) return;
     const bool perdioEntrada = enEntrada && entrada->obtenerEstado() == EntradaHacienda::Derrota;
     const bool perdioArena = enArena && arena->obtenerEstado() == ArenaPopeye::Derrota;
     if (!perdioEntrada && !perdioArena)
@@ -599,14 +628,14 @@ void MainWindow::mostrarInformacionEntrada(const QString& texto)
 
 void MainWindow::entrarArena()
 {
-    if (!enEntrada || entrada->obtenerEstado() != EntradaHacienda::Completada)
+    if (enMenu || !enEntrada || entrada->obtenerEstado() != EntradaHacienda::Completada)
         return;
     limpiarTeclado();
     if (!arena)
     {
         arena = new ArenaPopeye(this);
         conectarSonido(arena);
-        connect(arena, SIGNAL(victoriaConseguida()), audio, SLOT(celebrarVictoriaPopeye()));
+        connect(arena, SIGNAL(victoriaConseguida()), audio, SLOT(detenerMusica()));
         conectarSonido(arena->obtenerJugador());
         connect(arena, SIGNAL(combateSuperado()), this, SLOT(entrarDesenlace()), Qt::QueuedConnection);
         connect(arena, SIGNAL(informacionCambiada(QString)), this, SLOT(mostrarInformacionArena(QString)));
@@ -623,7 +652,7 @@ void MainWindow::entrarArena()
     vista->viewport()->setMouseTracking(true);
     vista->centerOn(arena->sceneRect().center());
     indicador->setText(arena->informacionActual());
-    controles->setText("A/D: mover | ESPACIO: saltar | CLIC: disparar | F: golpear | E: escudo | Q: agilidad "
+    controles->setText("A/D: mover | ESPACIO: saltar | CLIC: disparar | Enter: golpear | E: escudo | Q: agilidad "
                        "| R: reintentar");
     setWindowTitle("Perry: Operacion Medellin - Combate contra Popeye");
     tiempo.start();
@@ -636,7 +665,7 @@ void MainWindow::mostrarInformacionArena(const QString& texto)
 
 void MainWindow::entrarDesenlace()
 {
-    if (!enArena || arena->obtenerEstado() != ArenaPopeye::Victoria)
+    if (enMenu || !enArena || arena->obtenerEstado() != ArenaPopeye::Victoria)
         return;
     limpiarTeclado();
     if (!desenlace)
@@ -652,7 +681,7 @@ void MainWindow::entrarDesenlace()
     }
     enArena = false;
     enDesenlace = true;
-    audio->establecerMusica(Sonido::Sigilo);
+    audio->celebrarVictoriaPopeye();
     desenlace->reiniciar(arena->corazonesRestantes());
     vista->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
     vista->setScene(desenlace);
@@ -668,16 +697,19 @@ void MainWindow::mostrarInformacionDesenlace(const QString& texto)
         return;
     indicador->setText(texto);
     const auto estado = desenlace->obtenerEstado();
-    audio->establecerMusica(
-        estado == Desenlace::Combate || estado == Desenlace::Advertencia ? Sonido::Accion : Sonido::Sigilo);
+    // Dialogo y eleccion: solo el audio unico iniciado al entrar, sin fondo.
+    if (estado == Desenlace::Combate || estado == Desenlace::Advertencia)
+        audio->establecerMusica(Sonido::Accion);
+    else if (estado != Desenlace::Dialogo && estado != Desenlace::Eleccion)
+        audio->establecerMusica(Sonido::Sigilo);
     if (estado == Desenlace::Eleccion)
         controles->setText("1: rechazar el trato | 2: aceptar el trato | R: reiniciar juego");
     else if (estado == Desenlace::Advertencia || estado == Desenlace::Combate)
-        controles->setText("A/D: mover | ESPACIO: saltar | F: patada | E: escudo | R: reiniciar juego");
+        controles->setText("A/D: mover | ESPACIO: saltar | Enter: patada | E: escudo | R: reiniciar juego");
     else if (estado == Desenlace::Victoria)
-        controles->setText("F: nueva partida");
+        controles->setText("Enter: nueva partida");
     else if (estado == Desenlace::Dialogo)
-        controles->setText("F: continuar | R: reiniciar juego");
+        controles->setText("Enter: continuar | R: reiniciar juego");
     else
         controles->setText("R: reiniciar juego");
 }
@@ -688,9 +720,7 @@ void MainWindow::conectarSonido(QObject* emisor)
 }
 void MainWindow::nuevaPartidaConfigurada()
 {
-    escena->establecerDificultad(static_cast<Dificultad>(selectorDificultad->currentIndex()));
-    volverCasa();
-    vista->setFocus();
+    mostrarMenu();
 }
 void MainWindow::describirDificultad(int indice)
 {
@@ -700,4 +730,77 @@ void MainWindow::describirDificultad(int indice)
         descripcionDificultad->setText("Dificil: se avisan y revisan sectores.");
     else
         descripcionDificultad->setText("Normal: investigan la ultima posicion.");
+}
+
+void MainWindow::prepararMenu(QWidget* pantallaJuego)
+{
+    pantallas = new QStackedWidget(this);
+    pantallas->setObjectName("pantallas");
+    auto* menu = new MenuAnimado(pantallas);
+    auto* distribucion = new QVBoxLayout(menu);
+    distribucion->setContentsMargins(266, 216, 266, 104);
+    distribucion->setSpacing(6);
+    auto* subtitulo = new QLabel("ELIGE TU DESAFÍO", menu);
+    subtitulo->setAlignment(Qt::AlignCenter);
+    subtitulo->setStyleSheet("font-family:Arial; font-size:19px; font-weight:bold;"
+        " color:#ffe477; background:transparent;");
+    distribucion->addWidget(subtitulo);
+
+    listaModos = new QListWidget(menu);
+    listaModos->setObjectName("listaModos");
+    listaModos->setSelectionMode(QAbstractItemView::SingleSelection);
+    listaModos->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listaModos->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listaModos->setStyleSheet(
+        "QListWidget { background:transparent; border:0; outline:0; font-family:Arial;"
+        " font-size:17px; font-weight:bold; }"
+        "QListWidget::item { background:#1c3b4a; color:#d9e8eb; border:2px solid #426878;"
+        " border-radius:14px; margin:4px 2px; padding:10px 14px; }"
+        "QListWidget::item:selected { background:#116f67; border:3px solid #ffe477; color:#fff8d0; }");
+    listaModos->addItems({
+        "FÁCIL\nPierden tu rastro al ocultarte.",
+        "NORMAL\nInvestigan tu última posición.",
+        "DIFÍCIL\nSe avisan y revisan sectores." });
+    for (int i = 0; i < listaModos->count(); ++i)
+        listaModos->item(i)->setSizeHint(QSize(0, 78));
+    listaModos->setFixedHeight(242);
+    listaModos->setCurrentRow(1);
+    listaModos->installEventFilter(this);
+    distribucion->addWidget(listaModos);
+    auto* ayuda = new QLabel("↑  ↓  ELEGIR     •     ENTER  JUGAR", menu);
+    ayuda->setAlignment(Qt::AlignCenter);
+    ayuda->setStyleSheet("font-family:Arial; font-size:14px; font-weight:bold; padding:6px; color:#d4fff1; background:transparent;");
+    distribucion->addWidget(ayuda);
+    pantallas->addWidget(menu);
+    pantallas->addWidget(pantallaJuego);
+    setCentralWidget(pantallas);
+    // La jerarquia de padres Qt libera ambas pantallas y sus controles.
+}
+
+void MainWindow::mostrarMenu()
+{
+    limpiarTeclado();
+    enMenu = true;
+    temporizador->stop();
+    audio->establecerPausa(true);
+    audio->detenerMusica();
+    pantallas->setCurrentIndex(0);
+    listaModos->setCurrentRow(selectorDificultad->currentIndex());
+    listaModos->setFocus();
+    actualizarTitulo();
+}
+
+void MainWindow::elegirModo()
+{
+    if (!enMenu || listaModos->currentRow() < 0) return;
+    const int elegido = listaModos->currentRow();
+    selectorDificultad->setCurrentIndex(elegido);
+    escena->establecerDificultad(static_cast<Dificultad>(elegido));
+    enMenu = false;
+    volverCasa();
+    pantallas->setCurrentIndex(1);
+    vista->setFocus();
+    audio->establecerPausa(false);
+    tiempo.start();
+    temporizador->start();
 }

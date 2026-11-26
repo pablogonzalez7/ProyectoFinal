@@ -160,7 +160,7 @@ int main(int argc, char** argv)
              << endl;
 
         MainWindow ventana;
-        ventana.show();
+        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         for (auto* reloj : ventana.findChildren<QTimer*>())
             reloj->stop();
@@ -173,6 +173,7 @@ int main(int argc, char** argv)
         selector->setCurrentIndex(2);
         exigir(casa->dificultadActual() == Dificultad::Normal, "Aplica dificultad antes de Nueva partida");
         boton->click();
+        QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         exigir(casa->dificultadActual() == Dificultad::Dificil && casa->cantidadLlavesRecogidas() == 0,
             "Nueva partida no aplica dificultad");
         QKeyEvent tecla(QEvent::KeyPress, Qt::Key_R, Qt::NoModifier);
@@ -189,7 +190,10 @@ int main(int argc, char** argv)
         QApplication::sendEvent(vista, &regreso);
         exigir(!sonido->estaPausado(), "Recuperar foco no reanuda");
         for (int i = 0; i < 30; ++i)
+        {
             boton->click();
+            QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
+        }
         exigir(sonido->findChildren<QSoundEffect*>().size() == 9, "Reinicio duplica audio");
         const QString carpeta = argc > 1 ? QString::fromLocal8Bit(argv[1]) : "capturas";
         QDir().mkpath(carpeta);

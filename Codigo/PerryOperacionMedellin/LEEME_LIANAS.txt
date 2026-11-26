@@ -12,7 +12,7 @@ INSTALACION EN QT CREATOR (WINDOWS)
 No se incluyen build, .qtcreator ni configuraciones locales.
 
 COMO JUGAR
-Completa la carretera (1200 m) y pulsa F una vez. Cruza el rio.
+Completa la carretera (1200 m) y pulsa Enter una vez. Cruza el rio.
 Al llegar a las lianas:
 - Acercate al borde de la orilla y observa el balanceo.
 - Manten E y pulsa Espacio para saltar cuando el extremo se acerque.
@@ -66,7 +66,7 @@ Compilado con Qt 6.8.2 en Linux. Verificado:
   ni cambiar sus ciclos: se conservan las tres vidas.
 - Velocidad al soltarse y trayectoria parabolica; A/D no cambia ese vuelo.
 - Checkpoint, tres vidas, cien reinicios sin aumentar el numero de items.
-- Teclado E, Espacio, R, pausa y F una sola vez al llegar a 1200 m.
+- Teclado E, Espacio, R, pausa y Enter una sola vez al llegar a 1200 m.
 Las pruebas aisladas de colisiones y teclado si colocan objetos en posiciones
 controladas; la prueba del recorrido completo no lo hace.
 La prueba nueva esta en pruebas/prueba_lianas.cpp; CONSTRUIR_PRUEBAS=ON

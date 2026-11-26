@@ -194,9 +194,9 @@ QString EntradaHacienda::informacionActual() const
 {
     QString consejo;
     if (estado==Disfrazado) consejo="Acercate sin sombrero. C: transformarte y sorprenderlos una sola vez.";
-    else if (estado==Sorpresa) consejo=QString("Sorprendidos: %1 s. Salta y pulsa F para dar una patada en la cabeza.").arg(sorpresa,0,'f',1);
-    else if (estado==Combate) consejo="Esquiva los disparos saltando. F en el aire: patada a la cabeza; en el cuerpo no los vence.";
-    else if (estado==Despejada) consejo="Escoltas inconscientes. Acercate al porton de la derecha y pulsa F.";
+    else if (estado==Sorpresa) consejo=QString("Sorprendidos: %1 s. Salta y pulsa Enter para dar una patada en la cabeza.").arg(sorpresa,0,'f',1);
+    else if (estado==Combate) consejo="Esquiva los disparos saltando. Enter en el aire: patada a la cabeza; en el cuerpo no los vence.";
+    else if (estado==Despejada) consejo="Escoltas inconscientes. Acercate al porton de la derecha y pulsa Enter.";
     else if (estado==Derrota) consejo="Sin corazones. Volviendo al inicio de la hacienda...";
     else consejo="Entrada superada. Entrando al combate contra Popeye...";
     const int vencidos=int(!guardias[0]->estaActivo())+int(!guardias[1]->estaActivo());
@@ -219,5 +219,5 @@ void EntradaHacienda::drawBackground(QPainter *p,const QRectF &)
     p->fillRect(QRectF(655,225,290,35),QColor(255,249,222,225));
     p->setPen(QColor("#244e49"));
     p->setFont(QFont("Arial",12,QFont::Bold));
-    p->drawText(QRectF(655,225,290,35),Qt::AlignCenter,abierta ? "ENTRADA LIBRE - F" : "ENTRADA VIGILADA");
+    p->drawText(QRectF(655,225,290,35),Qt::AlignCenter,abierta ? "ENTRADA LIBRE - Enter" : "ENTRADA VIGILADA");
 }

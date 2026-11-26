@@ -358,7 +358,7 @@ QString Desenlace::informacionActual() const
         const QString carga = tiempoEscudo > 0 ? "ACTIVO"
             : recargaEscudo > 0                ? QString::number(qCeil(recargaEscudo)) + " s"
                                                : "LISTO (E)";
-        return QString("Corazones: %1/6 | Escudo: %2\nSalta y pulsa F para alcanzar su cabeza. Si pierdes, "
+        return QString("Corazones: %1/6 | Escudo: %2\nSalta y pulsa Enter para alcanzar su cabeza. Si pierdes, "
                        "vuelves al inicio del juego.")
             .arg(corazones)
             .arg(carga);
@@ -368,14 +368,14 @@ QString Desenlace::informacionActual() const
     if (estado == Portal)
         return "Regresando a casa...";
     if (estado == Victoria)
-        return "MISION COMPLETADA | F: nueva partida";
+        return "MISION COMPLETADA | Enter: nueva partida";
     return "Perry fue capturado. Reiniciando el juego desde la casa...";
 }
 void Desenlace::actualizarPanel()
 {
     QString texto;
     if (estado == Dialogo)
-        texto = "DIMENSIONADOR RECUPERADO\n\nPerry: Te llevare a la carcel antes de volver a casa.\n\n[F] "
+        texto = "DIMENSIONADOR RECUPERADO\n\nPerry: Te llevare a la carcel antes de volver a casa.\n\n[Enter] "
                 "Continuar";
     else if (estado == Eleccion)
         texto = "LA OFERTA DE ESCOBAR\n\nEscobar: Dejame libre. Te dare riqueza, poder y beneficios para tus "
@@ -390,7 +390,7 @@ void Desenlace::actualizarPanel()
             : "TRATO RECHAZADO\n\nPerry entrega a Escobar a las autoridades y conserva el dimensionador.";
     else if (estado == Victoria)
         texto = "MISION COMPLETADA\n\nEscobar esta bajo custodia. Perry regreso a su dimension.\n\nGracias "
-                "por jugar Perry: Operacion Medellin.\n[F] Nueva partida";
+                "por jugar Perry: Operacion Medellin.\n[Enter] Nueva partida";
     else if (estado == Derrota)
         texto = "MISION FALLIDA\n\nPerry fue capturado tras la traicion.\nEl juego comenzara de nuevo desde "
                 "la casa.";

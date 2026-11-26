@@ -1,12 +1,12 @@
 DESENLACE CON ESCOBAR — 25 de noviembre de 2026
 
 COMO CONTINUAR
-Vence a Popeye y pulsa F para hablar con Escobar. Mientras combatias, Escobar
+Vence a Popeye y pulsa Enter para hablar con Escobar. Mientras combatias, Escobar
 ya estaba sentado al fondo de la arena. Popeye conserva 10 puntos de vida y
 Perry comienza ese combate con 6 corazones.
 
 Perry recupera el dimensionador y anuncia que llevara a Escobar a la carcel.
-Pulsa F para escuchar la oferta. Luego elige con las teclas numericas:
+Pulsa Enter para escuchar la oferta. Luego elige con las teclas numericas:
 1: rechazar el trato. Escobar es entregado y Perry vuelve por el portal.
 2: aceptar el trato. Escobar traiciona a Perry y comienza un ultimo combate.
 La decision se toma una sola vez; las teclas mantenidas no la repiten.
@@ -14,10 +14,10 @@ La decision se toma una sola vez; las teclas mantenidas no la repiten.
 ULTIMO COMBATE
 Conservas los corazones que te quedaron al vencer a Popeye (maximo 6).
 Hay un aviso de 1.2 s antes del primer disparo: ya puedes moverte y saltar.
-A/D mueve; ESPACIO salta; E activa el escudo; F lanza una patada en el aire.
+A/D mueve; ESPACIO salta; E activa el escudo; Enter lanza una patada en el aire.
 El escudo dura 1 s y se recarga a los 6 s desde su activacion.
 Solo una patada a la cabeza incapacita a Escobar. El puno desde el suelo
-y los golpes al torso no lo hacen. F tiene 0.45 s de recarga.
+y los golpes al torso no lo hacen. Enter tiene 0.45 s de recarga.
 En esta escena no hay disparos del jugador ni superagilidad: la resolucion
 se basa en el salto, el escudo y la patada, como propone el documento.
 
@@ -31,7 +31,7 @@ R tambien reinicia TODO el juego desde el desenlace.
 FINAL
 Si rechazas el trato o superas la traicion, Escobar queda bajo custodia.
 Se abre el portal y Perry camina hacia el para regresar a su dimension.
-La pantalla de mision completada permanece hasta pulsar F: nueva partida.
+La pantalla de mision completada permanece hasta pulsar Enter: nueva partida.
 La entrega a las autoridades y el regreso se representan mediante texto
 y la animacion del portal; no hay una cinematica de traslado a la carcel.
 
@@ -74,7 +74,7 @@ Pruebas automaticas en Qt 6 / Linux:
 - Victoria tras aceptar mediante controles publicos, sin editar posiciones
   ni salud durante esa prueba de combate.
 - Derrota emitida una vez y cien reinicios con los mismos proyectiles/items.
-- MainWindow: F tras Popeye, elecciones, habilidades, final, regreso a casa
+- MainWindow: Enter tras Popeye, elecciones, habilidades, final, regreso a casa
   y reutilizacion del desenlace al recorrer de nuevo las transiciones.
 Las pruebas de colision y transiciones que aislan componentes colocan
 personajes directamente; la prueba de combate con controles no lo hace.

@@ -160,7 +160,7 @@ int main(int argc, char** argv)
         auto centro = j->sceneBoundingRect().center();
         bala->activar(centro, centro + QPointF(100, 0), true, Directo, 1000);
         arena.actualizar(paso);
-        exigir(arena.corazonesRestantes() == 6 && p->memoriaActual().bloqueados == 1,
+        exigir(arena.corazonesRestantes() == 5 && p->memoriaActual().bloqueados == 1,
             "Escudo no bloquea o no registra bloqueo");
         avanzar(arena, 1.1);
         arena.activarEscudo();
@@ -237,15 +237,15 @@ int main(int argc, char** argv)
         p->setPos(-2000, 396);
         int derrotas = 0;
         QObject::connect(&arena, &ArenaPopeye::partidaPerdida, [&] { ++derrotas; });
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             centro = j->sceneBoundingRect().center();
             bala->activar(centro, centro + QPointF(100, 0), true, Directo, 2000 + i);
             arena.actualizar(paso);
-            if (i < 5)
+            if (i < 4)
                 avanzar(arena, 1.0);
         }
-        exigir(arena.obtenerEstado() == ArenaPopeye::Derrota, "Seis impactos no terminan pelea");
+        exigir(arena.obtenerEstado() == ArenaPopeye::Derrota, "Cinco impactos no terminan pelea");
         arena.actualizar(1.3);
         arena.actualizar(2);
         exigir(derrotas == 1, "Derrota ausente o repetida");
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
             "Reinicio recrea objetos o conserva aprendizaje");
         cout << "OK victoria real, derrota unica, memoria y cien reinicios" << endl;
         MainWindow ventana;
-        ventana.show();
+        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* nivel = ventana.findChild<Nivel*>();
@@ -328,15 +328,15 @@ int main(int argc, char** argv)
             "Teclado no llega a la arena");
         QKeyEvent reinicio(QEvent::KeyPress, Qt::Key_R, Qt::NoModifier);
         QApplication::sendEvent(vista, &reinicio);
-        exigir(combate->corazonesRestantes() == 6 && !combate->agilidadActiva(), "R no reinicia pelea");
+        exigir(combate->corazonesRestantes() == 5 && !combate->agilidadActiva(), "R no reinicia pelea");
         combate->obtenerPopeye()->setPos(-2000, 396);
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             auto centro = combate->obtenerJugador()->sceneBoundingRect().center();
             combate->obtenerBalasEnemigas()[0]->activar(
                 centro, centro + QPointF(100, 0), true, Directo, 3000 + i);
             combate->actualizar(paso);
-            if (i < 5)
+            if (i < 4)
                 avanzar(*combate, 1.0);
         }
         combate->actualizar(1.3);

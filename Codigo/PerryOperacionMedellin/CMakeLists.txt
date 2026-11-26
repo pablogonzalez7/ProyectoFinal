@@ -13,6 +13,7 @@ qt_add_executable(PerryOperacionMedellin
     main.cpp
     mainwindow.cpp
     mainwindow.h
+    menuanimado.h menuanimado.cpp
     mainwindow.ui
     personaje.h personaje.cpp
     jugador.h jugador.cpp
@@ -107,10 +108,11 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
 option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica)
+    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica menu)
         qt_add_executable(pruebas_${prueba}
             pruebas/prueba_${prueba}.cpp
             mainwindow.h mainwindow.cpp mainwindow.ui
+            menuanimado.h menuanimado.cpp
             personaje.h personaje.cpp
             jugador.h jugador.cpp
             villano.h villano.cpp

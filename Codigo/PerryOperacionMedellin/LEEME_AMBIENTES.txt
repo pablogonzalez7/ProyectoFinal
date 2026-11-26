@@ -46,7 +46,7 @@ Se reutilizan los objetos al reiniciar.
 
 CONTROLES
 Casa: WASD para moverse, C para camuflaje, R para reiniciar.
-Carretera: A/D para conducir, E para escudo; al llegar a 1200 m, F una vez.
+Carretera: A/D para conducir, E para escudo; al llegar a 1200 m, Enter una vez.
 Hacienda: A/D para moverse, Espacio para saltar o soltarse de la liana;
 manten E para agarrarte cuando el extremo este cerca. R reinicia la hacienda.
 

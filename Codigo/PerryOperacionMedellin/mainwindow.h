@@ -20,6 +20,8 @@ class QLabel;
 class QComboBox;
 class QCheckBox;
 class AudioJuego;
+class QListWidget;
+class QStackedWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -45,6 +47,8 @@ private slots:
     // QTimer emite timeout() y este slot actualiza los objetos del nivel.
     void moverFigura();
     void nuevaPartidaConfigurada();
+    void mostrarMenu();
+    void elegirModo();
     void describirDificultad(int indice);
     void mostrarInformacionCasa(const QString& texto);
     void mostrarInformacionCarretera(const QString& texto);
@@ -65,12 +69,16 @@ private slots:
 
 private:
     void prepararVentana();
+    void prepararMenu(QWidget* pantallaJuego);
     void conectarSonido(QObject* emisor);
     bool procesarTecla(QKeyEvent* evento);
     void actualizarTitulo();
     void actualizarDireccion();
 
     Ui::MainWindow* interfaz;
+    QStackedWidget* pantallas = nullptr;
+    QListWidget* listaModos = nullptr;
+    bool enMenu = true;
 
     Nivel* escena;
     QGraphicsView* vista;

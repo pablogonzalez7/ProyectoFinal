@@ -1,17 +1,17 @@
 COMBATE CONTRA POPEYE — 25 de noviembre de 2026
 
 COMO LLEGAR
-Completa la casa, recorre la carretera y pulsa F una vez al llegar a 1200 m.
+Completa la casa, recorre la carretera y pulsa Enter una vez al llegar a 1200 m.
 Cruza el rio y las dos lianas. En la entrada, transforma a Perry con C y
 vence a los dos escoltas con patadas a la cabeza. Ya en el suelo, acercate
-al porton de la derecha y pulsa F. Se abre la arena del jefe.
+al porton de la derecha y pulsa Enter. Se abre la arena del jefe.
 Esta actualizacion incluye las anteriores; instalala al final.
 
 CONTROLES DEL COMBATE
 A/D: moverse. ESPACIO: saltar. Mouse: apuntar. Clic izquierdo: un disparo.
 Cada disparo conserva su direccion inicial; hay un segundo entre disparos.
-F: puno en suelo (1 punto) o patada en aire (2 puntos). Un golpe solo puede
-contar una vez. Se requiere una nueva pulsacion; mantener F no repite.
+Enter: puno en suelo (1 punto) o patada en aire (2 puntos). Un golpe solo puede
+contar una vez. Se requiere una nueva pulsacion; mantener Enter no repite.
 Recarga del golpe: 1 s, reducida a 0.75 s durante la superagilidad.
 E: escudo de 1 s, con recarga de 6 s desde su activacion.
 Q: superagilidad durante 10 s, seguida de fatiga durante 10 s.
@@ -31,7 +31,7 @@ contra el suelo inmediatamente al dispararla. Las plataformas bloquean balas.
 
 AL GANAR O PERDER
 Al vencer, Popeye queda incapacitado y se anuncia la recuperacion del
-dimensionador. F abre el desenlace con Escobar; R permite repetir el combate.
+dimensionador. Enter abre el desenlace con Escobar; R permite repetir el combate.
 Consulta LEEME_DESENLACE.txt para las dos decisiones y sus consecuencias.
 Al perder, vuelves al inicio de la hacienda, sin repetir casa y carretera.
 Al terminar la pelea, los personajes que estaban en el aire aterrizan.

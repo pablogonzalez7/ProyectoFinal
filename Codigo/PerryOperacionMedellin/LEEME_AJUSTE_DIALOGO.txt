@@ -1,0 +1,30 @@
+AJUSTE: DIALOGO CON ESCOBAR Y CINCO VIDAS
+
+Aplicar sobre la actualizacion de musica personalizada ya instalada.
+Este ZIP es un parche: no incluye de nuevo las imagenes ni los MP3.
+
+INSTALACION
+1. Cierra el juego y guarda una copia de tu proyecto.
+2. Abre la carpeta PerryOperacionMedellin de este ZIP.
+3. Copia SU CONTENIDO sobre tu carpeta actual PerryOperacionMedellin,
+   donde esta CMakeLists.txt. Reemplaza los archivos y combina pruebas/.
+   No crees otra carpeta PerryOperacionMedellin dentro de la actual.
+4. En Qt Creator ejecuta Build > Rebuild Project y vuelve a ejecutar.
+
+CAMBIOS
+- Perry inicia y reinicia el combate contra Popeye con 5 corazones.
+- Popeye mantiene sus 10 vidas.
+- Al derrotar a Popeye se detiene la musica del combate.
+- Al pulsar Enter para entrar al dialogo con Escobar, el MP3 de reproduccion
+  unica empieza desde el inicio. No suena al derrotar a Popeye.
+- Se elimina la antigua musica de fondo de Dialogo y Eleccion.
+- El MP3 se reproduce una sola vez por encuentro; al terminar, el dialogo
+  queda en silencio. Una nueva partida permite reproducirlo de nuevo.
+- Se conservan los efectos y la musica de las otras etapas.
+
+VALIDACION
+Compilado en Linux con Qt 6 y C++17. Pasaron prueba_musica y prueba_popeye:
+transiciones, disparo unico del audio, reinicios, HUD y derrota con 5 impactos.
+El fin del MP3 se simula para verificar la logica de no repeticion.
+Este entorno no tiene dispositivo de salida de audio; falta comprobar la
+reproduccion audible en Windows.

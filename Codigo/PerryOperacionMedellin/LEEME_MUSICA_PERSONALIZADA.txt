@@ -26,13 +26,12 @@ COMPORTAMIENTO
    reinicia Perry desde cero. Perder la carretera o la entrada vigilada tambien
    reinicia la cancion al volver a la etapa correspondiente.
 4. Al entrar a combatir con Popeye se sustituye la musica por popeye.mp3 en bucle.
-5. Al derrotarlo se detiene su cancion y suena victoria_popeye.mp3 UNA vez.
-   No se usa el efecto de victoria generico en este combate.
-6. Pulsar F antes de acabar esos 14 segundos permite avanzar al dialogo, pero
-   no corta el audio de victoria. Al terminarlo comienza la pista del dialogo.
-   Si todavia estas en la arena, queda en silencio hasta que avances.
-7. En el desenlace se conservan las pistas sintetizadas de dialogo y combate
-   anteriores. No se asigno una cancion nueva a esa etapa.
+5. Al derrotarlo se detiene su cancion y queda en silencio mientras esperas.
+6. Al pulsar Enter para entrar a hablar con Escobar suena victoria_popeye.mp3
+   UNA vez. Al terminar queda en silencio en Dialogo y Eleccion; se quito
+   la pista sintetizada que sonaba de fondo en esos momentos.
+7. Despues del dialogo se conservan las pistas anteriores para el combate
+   y los otros estados del desenlace.
 8. R reinicia tambien la cancion de la etapa; Nueva partida vuelve a Perry.
    Una nueva victoria en otra partida permite escuchar otra vez la celebracion.
 9. M silencia/activa y el deslizador ajusta volumen. Al pausar o silenciar se
@@ -52,9 +51,9 @@ CODIGO Y EFICIENCIA
 - establecerMusica conserva la posicion si ya es la pista actual.
   reiniciarMusica vuelve al inicio incluso si es el mismo archivo.
 - La victoria tiene una bandera por intento para evitar repeticiones por
-  fotograma; el cambio de musica del dialogo espera el fin de la celebracion.
+  fotograma; el audio se inicia al entrar al dialogo y no se repite al actualizarlo.
 - No se crean reproductores al perder una vida, cambiar de nivel o reiniciar.
-- Sprites, fisicas, colisiones y salud se conservan: Popeye 10, Perry 6 al
+- Sprites, fisicas y colisiones se conservan. Popeye tiene 10 y Perry 5 al
   iniciar el combate; el desenlace conserva los corazones restantes.
 
 VALIDACION

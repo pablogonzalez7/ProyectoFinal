@@ -29,6 +29,7 @@ public slots:
     void reiniciarMusica(int nuevaPista);
     void reiniciarPerry();
     void celebrarVictoriaPopeye();
+    void detenerMusica();
     void sonarCamuflaje(bool activo);
 signals:
     void efectoReproducido(int evento);

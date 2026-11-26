@@ -1,0 +1,45 @@
+MENU INICIAL Y TECLA ENTER
+
+INSTALAR SOBRE LA VERSION CON MUSICA PERSONALIZADA Y PERRY CON 5 VIDAS.
+Este ZIP es un parche: conserva tus imagenes y archivos de sonido actuales.
+
+1. Cierra el juego y guarda una copia de tu proyecto.
+2. Abre la carpeta PerryOperacionMedellin incluida en este ZIP.
+3. Copia SU CONTENIDO sobre la carpeta actual del proyecto, donde esta
+   CMakeLists.txt. Reemplaza archivos y combina carpetas.
+   No crees otra carpeta PerryOperacionMedellin dentro de la actual.
+4. En Qt Creator vuelve a ejecutar CMake y Build > Rebuild Project.
+
+USO
+Al iniciar aparece el menu de FACIL, NORMAL y DIFICIL.
+Arriba y abajo seleccionan; Enter confirma y comienza desde la casa.
+Normal aparece seleccionado inicialmente. Tambien sirve Enter numerico.
+Nueva partida abre de nuevo el menu; R conserva el modo al reiniciar.
+
+Los modos usan la dificultad existente de los guardias de la casa:
+- Facil: pierden el rastro cuando dejan de ver a Perry.
+- Normal: investigan la ultima posicion vista.
+- Dificil: comparten avisos y revisan sectores.
+El menu no introduce cambios de balance en las otras etapas.
+
+Enter reemplaza todas las acciones antes asignadas a F:
+- Entrar a la hacienda a los 1200 metros.
+- Dar patadas a los escoltas y entrar por el porton.
+- Golpear a Popeye y, tras vencerlo, hablar con Escobar.
+- Continuar el dialogo, dar patadas en el combate final y empezar otra partida.
+Mantener Enter no repite acciones. Las decisiones 1 y 2 se conservan.
+Los avisos del juego y las notas de controles se actualizaron.
+
+IMPLEMENTACION
+QListWidget contiene las tres opciones y gestiona las flechas.
+QStackedWidget alterna entre el menu y la pantalla del juego.
+El QTimer se detiene en el menu; las escenas no avanzan al elegir.
+La jerarquia de padres Qt libera el menu y los controles al cerrar.
+Se reutilizan el menu, las escenas y el reproductor; no se crean por tecla.
+
+VALIDACION
+Compilado en Linux con Qt 6 / C++17. Pruebas aprobadas: menu, musica,
+Popeye, audio/dificultad y lianas. Menu inspeccionado visualmente.
+Falta verificar en Windows. Este entorno no tiene salida audible.
+El fallo del tono de prueba de Windows es independiente de este parche;
+esta actualizacion no instala controladores ni modifica el audio de Windows.

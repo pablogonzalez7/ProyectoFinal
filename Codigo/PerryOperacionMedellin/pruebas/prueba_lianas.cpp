@@ -169,8 +169,8 @@ int main(int argc,char **argv) {
   for(int i=0;i<100;++i) h.reiniciar();
   exigir(h.items().size()==cuenta,"Crea objetos al reiniciar");
   cout<<"OK recorrido completo real y reutilizacion en cien reinicios"<<endl;
-  // Integracion real: recoger llaves, recorrer carretera, F y controles de liana.
-  MainWindow ventana; ventana.show(); app.processEvents(); ventana.findChild<QTimer *>()->stop();
+  // Integracion real: recoger llaves, recorrer carretera, Enter y controles de liana.
+  MainWindow ventana; ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection); app.processEvents(); ventana.findChild<QTimer *>()->stop();
   auto *n=ventana.findChild<Nivel *>(); auto *vista=ventana.findChild<QGraphicsView *>();
   for(auto *g:n->obtenerGuardias()) g->setPos(3000,3000);
   for(QPointF posicion:{QPointF(90,680),QPointF(1280,95)}) {
@@ -186,22 +186,22 @@ int main(int argc,char **argv) {
     c->activarDimensionador(); c->actualizar(paso);
   }
   exigir(c->obtenerEstado()==Carretera::Llegada,"Carretera no termina"); app.processEvents();
-  exigir(!ventana.findChild<Hacienda *>(),"F anticipada abre hacienda");
+  exigir(!ventana.findChild<Hacienda *>(),"Enter anticipada abre hacienda");
   const int resistenciaLlegada=c->resistenciaActual();
   c->actualizar(60); app.processEvents();
   exigir(c->obtenerEstado()==Carretera::Llegada && c->resistenciaActual()==resistenciaLlegada
          && c->distanciaRecorrida()==1200,"No espera a salvo a los 1200 m");
-  QKeyEvent enter(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier); QApplication::sendEvent(vista,&enter);
-  exigir(vista->scene()==c,"Enter todavia abre hacienda");
-  QKeyEvent repetida(QEvent::KeyPress,Qt::Key_F,Qt::NoModifier,QString(),true);
+  QKeyEvent anterior(QEvent::KeyPress,Qt::Key_F,Qt::NoModifier); QApplication::sendEvent(vista,&anterior);
+  exigir(vista->scene()==c,"La tecla anterior todavia abre hacienda");
+  QKeyEvent repetida(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier,QString(),true);
   QApplication::sendEvent(vista,&repetida); app.processEvents();
   exigir(vista->scene()==c,"Autorrepeticion dispara entrada");
   int entradas=0; QObject::connect(c,&Carretera::entradaHabilitada,[&]{++entradas;});
-  QKeyEvent f(QEvent::KeyPress,Qt::Key_F,Qt::NoModifier); QApplication::sendEvent(vista,&f);
+  QKeyEvent f(QEvent::KeyPress,Qt::Key_Return,Qt::NoModifier); QApplication::sendEvent(vista,&f);
   QApplication::sendEvent(vista,&f); // Doble pulsacion antes de procesar la cola.
   app.processEvents();
   exigir(entradas==1,"Entrada emitida mas de una vez");
-  auto *hac=ventana.findChild<Hacienda *>(); exigir(hac && vista->scene()==hac,"F no abre hacienda");
+  auto *hac=ventana.findChild<Hacienda *>(); exigir(hac && vista->scene()==hac,"Enter no abre hacienda");
   QKeyEvent espacio(QEvent::KeyPress,Qt::Key_Space,Qt::NoModifier); QApplication::sendEvent(vista,&espacio);
   exigir(hac->obtenerJugador()->velocidadVerticalActual()<0,"Espacio no salta");
   hac->actualizar(0.05);
@@ -225,6 +225,6 @@ int main(int argc,char **argv) {
   exigir(!ventana.findChild<QTimer *>()->isActive(),"No pausa al perder foco");
   QApplication::sendEvent(vista,&espacio); pj->setPos(lj->puntoAgarre()-QPointF(28,8));
   hac->actualizar(paso); exigir(!hac->estaEnLiana(),"E queda pegada al perder foco");
-  cout<<"OK integracion F unica tras 1200 m, E, Espacio, R y pausa por foco"<<endl;
+  cout<<"OK integracion Enter unica tras 1200 m, E, Espacio, R y pausa por foco"<<endl;
  } catch(const exception &e) { cerr<<e.what()<<endl; return 1; }
 }

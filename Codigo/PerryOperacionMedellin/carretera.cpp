@@ -44,7 +44,7 @@ void Carretera::reiniciar() {
 void Carretera::establecerDireccion(int direccion) { vehiculo->establecerDireccion(direccion); }
 QString Carretera::informacionActual() const {
     if(estado==Derrota) return "ESCAPE FALLIDO | Regresando al inicio de la casa...";
-    if(estado==Llegada) return "1200/1200 m | Llegaste a la hacienda.\nPulsa F una vez para bloquear la entrada y pasar al nivel 2.";
+    if(estado==Llegada) return "1200/1200 m | Llegaste a la hacienda.\nPulsa Enter una vez para bloquear la entrada y pasar al nivel 2.";
     const QString escudo=tiempoEscudo>0 ? "ACTIVO" : (recarga>0 ? QString("%1 s").arg(qCeil(recarga)) : "LISTO (E)");
     QString objetivo=enLodo ? "LODO: el perseguidor se acerca." : "Esquiva las barreras y los disparos.";
     return QString("%1/%2 m | %3 km/h | Resistencia: %4/3 | Perseguidor: %5 m | Escudo: %6\n%7")
@@ -162,7 +162,7 @@ void Carretera::actualizar(qreal segundos) {
         actualizarPersecucion(paso);
         if(estado==Conduciendo && distancia>=ConfiguracionCarretera::longitudRecorrido) {
             distancia=ConfiguracionCarretera::longitudRecorrido;
-            finalizar(true,"Llegaste a la hacienda!\nPulsa F para entrar al nivel 2.");
+            finalizar(true,"Llegaste a la hacienda!\nPulsa Enter para entrar al nivel 2.");
         }
         pendiente-=paso;
     }

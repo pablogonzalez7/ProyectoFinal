@@ -104,7 +104,7 @@ void AudioJuego::cargarPista(int nuevaPista)
 void AudioJuego::establecerMusica(int nuevaPista)
 {
     if (nuevaPista < 0 || nuevaPista >= Sonido::VictoriaPopeye) return;
-    // F puede abrir el dialogo antes de acabar la celebracion: no corta el audio.
+    // Si se elige una opcion antes de acabar el audio unico, espera a que termine.
     if (celebrando)
     {
         pistaPendiente = nuevaPista;
@@ -141,7 +141,7 @@ void AudioJuego::revisarEstadoMusica(QMediaPlayer::MediaStatus estado)
     if (estado != QMediaPlayer::EndOfMedia || !celebrando) return;
     celebrando = false;
     musicaTerminada = true;
-    // Si sigue en la pantalla de victoria, queda en silencio hasta avanzar.
+    // Si sigue en el dialogo, queda en silencio al terminar el audio unico.
     const int siguiente = pistaPendiente;
     pistaPendiente = -1;
     if (siguiente >= 0) cargarPista(siguiente);
@@ -163,4 +163,13 @@ void AudioJuego::informarErrorMusica()
 void AudioJuego::sonarCamuflaje(bool activo)
 {
     if (activo) reproducir(Sonido::Camuflaje);
+}
+
+// Silencio entre la victoria y el comienzo de la conversacion.
+void AudioJuego::detenerMusica()
+{
+    celebrando = false;
+    pistaPendiente = -1;
+    musicaTerminada = true;
+    musica->stop();
 }

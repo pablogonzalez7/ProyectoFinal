@@ -2,19 +2,19 @@ ENTRADA VIGILADA - DESPUES DE LAS DOS LIANAS
 
 Se conecta automaticamente al llegar al final del recorrido de la hacienda.
 Perry aparece sin sombrero. Dos escoltas se acercan lentamente y aun no disparan.
-A/D mueve; ESPACIO salta; C transforma; F da la patada durante el salto.
+A/D mueve; ESPACIO salta; C transforma; Enter da la patada durante el salto.
 C sorprende a los dos durante tres segundos, una sola vez por intento.
 En este encuentro C NO es el camuflaje de cuatro segundos de la casa.
 
 Solo una patada en el aire que alcance la cabeza deja inconsciente al escolta.
-Acercate, salta y pulsa F cuando tus pies esten a la altura de su cabeza.
-Una pulsacion permite una patada, con recarga de 0.45 s; mantener F no repite.
+Acercate, salta y pulsa Enter cuando tus pies esten a la altura de su cabeza.
+Una pulsacion permite una patada, con recarga de 0.45 s; mantener Enter no repite.
 Los golpes al cuerpo y los golpes desde el suelo no incapacitan.
 Tras la sorpresa disparan horizontalmente cada 1.5 s. El segundo escolta
 comienza un poco despues para que los dos no disparen siempre juntos.
 Salta para esquivar. Hay tres corazones y 0.9 s de proteccion tras un impacto.
 
-Al vencer a ambos, ve al porton de la derecha y pulsa F desde el suelo.
+Al vencer a ambos, ve al porton de la derecha y pulsa Enter desde el suelo.
 La entrada queda superada y ahora conecta con el combate contra Popeye.
 Consulta LEEME_POPEYE.txt para sus controles y habilidades.
 Tres impactos te devuelven al inicio de la hacienda (rio e hipopotamos).

@@ -38,7 +38,7 @@ No hay carga de archivos de imagen dentro de paint ni del movimiento.
 VERIFICACION EN LINUX / QT 6
 12 pruebas de casa aprobadas, incluyendo ambos ordenes de llaves con
 patrullas activas. Recorrido de rio y dos lianas completo con tres vidas.
-Transicion F a los 1200 m, agarre E, salto, R y pausa aprobados.
+Transicion Enter a los 1200 m, agarre E, salto, R y pausa aprobados.
 Prueba de margenes: contacto con cama x=229.969 (antes limite x=228),
 siluetas sin solapamiento y contacto con un pixel adicional hacia el mueble.
 Apoyo al borde: centro dentro sostiene; centro fuera inicia caida y no permite

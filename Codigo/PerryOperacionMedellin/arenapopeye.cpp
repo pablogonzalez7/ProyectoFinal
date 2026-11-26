@@ -72,7 +72,7 @@ ArenaPopeye::ArenaPopeye(QObject* padre)
 void ArenaPopeye::reiniciar()
 {
     estado = EnJuego;
-    corazones = 6;
+    corazones = 5;
     siguienteIdentificador = 0;
     derrotaEmitida = false;
     continuacionEmitida = false;
@@ -451,7 +451,7 @@ void ArenaPopeye::actualizar(qreal segundos)
 QString ArenaPopeye::informacionActual() const
 {
     if (estado == Victoria)
-        return "Popeye incapacitado! Recuperaste el dimensionador.\nF: hablar con Escobar | R: repetir combate.";
+        return "Popeye incapacitado! Recuperaste el dimensionador.\nEnter: hablar con Escobar | R: repetir combate.";
     if (estado == Derrota)
         return "Sin corazones. Volviendo al inicio de la hacienda...";
     const QString esc = tiempoEscudo > 0 ? "ACTIVO"
@@ -461,8 +461,8 @@ QString ArenaPopeye::informacionActual() const
         : tiempoFatiga > 0                 ? QString("FATIGA %1 s").arg(qCeil(tiempoFatiga))
         : recargaAgilidad > 0              ? QString::number(qCeil(recargaAgilidad)) + " s"
                                            : "LISTA (Q)";
-    return QString("Corazones: %1/6 | Popeye: %2/%5 | Escudo: %3 | Agilidad: %4\nApunta y haz clic (1 "
-                   "disparo/s). F: puno en suelo, patada en aire. Anticipa sus saltos.")
+    return QString("Corazones: %1/5 | Popeye: %2/%5 | Escudo: %3 | Agilidad: %4\nApunta y haz clic (1 "
+                   "disparo/s). Enter: puno en suelo, patada en aire. Anticipa sus saltos.")
         .arg(corazones)
         .arg(popeye->resistenciaActual())
         .arg(esc)

@@ -10,8 +10,8 @@ Se reutiliza imagenes/perry.png: no hay que descargar otra imagen.
 
 COMO ENTRAR Y JUGAR
 Supera la casa y completa los 1200 metros de carretera.
-Al llegar, pulsa F UNA VEZ para bloquear la entrada y entrar a la hacienda.
-F antes de llegar no se guarda; Enter ya no cambia el nivel. Puedes esperar
+Al llegar, pulsa Enter UNA VEZ para bloquear la entrada y entrar a la hacienda.
+Enter antes de llegar no se guarda; Enter cambia el nivel al llegar. Puedes esperar
 en la llegada sin perder vidas ni recibir disparos.
 A/D: caminar. Espacio: saltar. Suelta Espacio para poder saltar de nuevo.
 R: reiniciar la hacienda. Perder el foco de la ventana pausa el juego.
@@ -70,5 +70,5 @@ Compilacion nativa con Qt 6 en Linux y pruebas automaticas de:
 - Cruce completo con movimiento, saltos y esperas, sin teletransportar
   al jugador ni alterar los ciclos: terminado con tres vidas.
 - Cien reinicios sin aumentar el numero de objetos.
-- Transicion casa-carretera-hacienda y teclas F, Espacio y R.
+- Transicion casa-carretera-hacienda y teclas Enter, Espacio y R.
 Falta probar esta actualizacion en tu instalacion de Windows.
