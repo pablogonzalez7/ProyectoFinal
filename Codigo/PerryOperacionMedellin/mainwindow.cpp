@@ -81,7 +81,7 @@ void MainWindow::prepararVentana()
     indicador->setFont(QFont("Arial", 10));
     indicador->setStyleSheet("background:#17222b; color:#eef3f7; padding:6px;");
     indicador->setText(escena->informacionActual());
-    controles = new QLabel("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar", this);
+    controles = new QLabel("WASD: mover    |    C: camuflaje (2 usos, 4 s) / cancelar    |    R: reiniciar", this);
     controles->setFixedHeight(28);
     controles->setStyleSheet("background:#17222b; color:#eef3f7; padding-left:8px;");
 
@@ -533,7 +533,7 @@ void MainWindow::volverCasa()
     vista->setScene(escena);
     vista->centerOn(jugador);
     indicador->setText(escena->informacionActual());
-    controles->setText("WASD: mover    |    C: camuflaje 4 s / cancelar    |    R: reiniciar");
+    controles->setText("WASD: mover    |    C: camuflaje (2 usos, 4 s) / cancelar    |    R: reiniciar");
     setWindowTitle("Perry: Operacion Medellin - La casa");
     tiempo.start();
 }

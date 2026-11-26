@@ -108,7 +108,7 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
 option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica menu)
+    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica menu azar_camuflaje)
         qt_add_executable(pruebas_${prueba}
             pruebas/prueba_${prueba}.cpp
             mainwindow.h mainwindow.cpp mainwindow.ui

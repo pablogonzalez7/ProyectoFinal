@@ -24,16 +24,16 @@ Hacienda::Hacienda(QObject *padre) : QGraphicsScene(padre), jugador(new Jugador(
     // Todos comparten la misma altura del rio; el apoyo baja con el dibujo.
     const qreal alturaLomo = alturaAgua - 32.0;
     agregar(new Plataforma(0, 420, 300));
-    agregar(new Hipopotamo(400, alturaLomo, 0));
-    agregar(new Hipopotamo(590, alturaLomo, 7.7));
-    agregar(new Hipopotamo(780, alturaLomo, 6.9));
+    agregar(new Hipopotamo(400, alturaLomo));
+    agregar(new Hipopotamo(590, alturaLomo));
+    agregar(new Hipopotamo(780, alturaLomo));
     agregar(new Plataforma(990, 420, 260));
-    agregar(new Hipopotamo(1380, alturaLomo, 0.4));
-    agregar(new Hipopotamo(1580, alturaLomo, 8.1));
-    agregar(new Hipopotamo(1790, alturaLomo, 7.3));
+    agregar(new Hipopotamo(1380, alturaLomo));
+    agregar(new Hipopotamo(1580, alturaLomo));
+    agregar(new Hipopotamo(1790, alturaLomo));
     agregar(new Plataforma(2010, 420, 240));
-    agregar(new Hipopotamo(2370, alturaLomo, 0.8));
-    agregar(new Hipopotamo(2560, alturaLomo, 0.0));
+    agregar(new Hipopotamo(2370, alturaLomo));
+    agregar(new Hipopotamo(2560, alturaLomo));
     agregar(new Plataforma(2780, 420, 320));
     agregar(new Plataforma(3460, 420, 260));
     agregar(new Plataforma(4080, 420, 400));

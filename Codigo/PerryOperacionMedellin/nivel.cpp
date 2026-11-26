@@ -424,9 +424,10 @@ void Nivel::actualizarIndicador()
             ++perseguidores;
         }
     }
-    const QString modo = jugador->estaCamuflado()
+    QString modo = jugador->estaCamuflado()
         ? QString("CAMUFLADO: %1 s").arg(qCeil(jugador->segundosCamuflaje()))
         : "AGENTE";
+    modo += QString(" | Camuflajes: %1/2").arg(jugador->camuflajesRestantes());
     const QString reloj = alarma ? QString("ALARMA: %1 s").arg(qCeil(tiempoRestante)) : "Alarma inactiva";
     QString objetivo = alarma ? "Sal por la puerta verde antes de que termine el tiempo."
                               : "Llaves: bodega y oficina. Quieto con sombrero 1,2 s para recoger.";

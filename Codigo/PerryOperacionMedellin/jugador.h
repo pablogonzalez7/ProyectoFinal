@@ -38,6 +38,7 @@ public:
     void alternarCamuflaje();
     void actualizarCamuflaje(qreal segundosReales);
     qreal segundosCamuflaje() const;
+    int camuflajesRestantes() const;
     void restablecer();
     bool estaCamuflado() const;
     qreal rapidezActual() const;
@@ -83,6 +84,8 @@ private:
     // Los 16 fotogramas se preparan una vez y se reutilizan al dibujar.
     array<array<QPixmap, cantidadFotogramas>, cantidadDirecciones> fotogramas;
     array<QPixmap, cantidadDirecciones> aparienciasCamufladas;
+    static constexpr int maximoCamuflajes = 2;
+    int usosCamuflaje = maximoCamuflajes;
     bool camuflado = false;
     qreal tiempoCamuflaje = 0.0;
     Orientacion orientacion = Abajo;

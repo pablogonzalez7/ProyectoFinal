@@ -7,7 +7,7 @@ using namespace std;
 class Hipopotamo : public Plataforma
 {
 public:
-    Hipopotamo(qreal x, qreal y, qreal desfase);
+    Hipopotamo(qreal x, qreal y, qreal desfase = 0);
     QRectF boundingRect() const override;
     bool permiteApoyo() const override;
     void actualizar(qreal segundos) override;
@@ -19,6 +19,6 @@ private:
     array<QPixmap, 4> sprites;
     void cargarSprites();
     qreal fase;
-    qreal desfaseInicial;
+
 };
 #endif

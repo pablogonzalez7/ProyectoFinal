@@ -1,17 +1,24 @@
 #include "hipopotamo.h"
 #include "configuracionhacienda.h"
 #include <QPainter>
+#include <QRandomGenerator>
 #include <QPixmapCache>
 #include <stdexcept>
 #include <cmath>
 using namespace std;
 using namespace ConfiguracionHacienda;
 Hipopotamo::Hipopotamo(qreal x, qreal y, qreal desfase)
-    : Plataforma(x, y, 140, 100), fase(desfase), desfaseInicial(desfase) { cargarSprites(); }
+    : Plataforma(x, y, 140, 100), fase(desfase) { cargarSprites(); }
 bool Hipopotamo::permiteApoyo() const { return fase < inicioInmersion; }
 bool Hipopotamo::estaAvisando() const { return fase >= inicioAviso && fase < inicioInmersion; }
 qreal Hipopotamo::faseActual() const { return fase; }
-void Hipopotamo::reiniciar() { fase = desfaseInicial; update(); }
+void Hipopotamo::reiniciar()
+{
+    // Cada hipopotamo empieza en un momento distinto del mismo ciclo.
+    // El aviso sigue durando un segundo y no cambian dibujo ni colisiones.
+    fase = QRandomGenerator::global()->generateDouble() * periodoHipopotamo;
+    update();
+}
 void Hipopotamo::actualizar(qreal dt)
 {
     fase = fmod(fase + dt, periodoHipopotamo);

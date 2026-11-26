@@ -101,6 +101,10 @@ void Jugador::cargarSprites()
 void Jugador::alternarCamuflaje()
 {
     if (modoPlataformas) return;
+    if (!camuflado) {
+        if (usosCamuflaje == 0) return;
+        --usosCamuflaje; // Solo se consume al activar, nunca al cancelar.
+    }
     camuflado = !camuflado;
     tiempoCamuflaje = camuflado ? ConfiguracionCasa::duracionCamuflaje : 0.0;
     velocidad = camuflado ? ConfiguracionCasa::rapidezCamuflado
@@ -124,6 +128,7 @@ void Jugador::actualizarCamuflaje(qreal segundosReales)
 }
 
 qreal Jugador::segundosCamuflaje() const { return tiempoCamuflaje; }
+int Jugador::camuflajesRestantes() const { return usosCamuflaje; }
 
 void Jugador::restablecer()
 {
@@ -137,7 +142,8 @@ void Jugador::restablecer()
     orientacion = modoPlataformas ? Derecha : Abajo;
     fotogramaActual = 0;
     tiempoAnimacion = 0.0;
-    const bool cambio = camuflado;
+    const bool cambio = camuflado || usosCamuflaje != maximoCamuflajes;
+    usosCamuflaje = maximoCamuflajes;
     camuflado = false;
     tiempoCamuflaje = 0.0;
     velocidad = modoPlataformas ? ConfiguracionHacienda::rapidezJugador : ConfiguracionCasa::rapidezJugador;

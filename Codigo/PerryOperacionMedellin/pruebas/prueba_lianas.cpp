@@ -58,9 +58,12 @@ int main(int argc,char **argv) {
   exigir(hip.estaAvisando() && hip.permiteApoyo(),"Aviso incorrecto");
   hip.actualizar(1.0); exigir(!hip.permiteApoyo(),"Apoya sumergido");
   hip.actualizar(3); exigir(hip.permiteApoyo(),"No emerge");
-  hip.reiniciar(); exigir(hip.faseActual()==0,"Fase no reinicia");
+  hip.reiniciar(); exigir(hip.faseActual()>=0 && hip.faseActual()<8.5,"Fase fuera del ciclo");
   cout<<"OK aviso, inmersion y ciclo de hipopotamo"<<endl;
-  h.reiniciar(); j->setPos(440,320); j->establecerEnSuelo(false); avanzar(h,0.5);
+  h.reiniciar();
+  auto *inicialHip=dynamic_cast<Hipopotamo *>(h.obtenerPlataformas()[1]);
+  inicialHip->actualizar(8.5-inicialHip->faseActual());
+  j->setPos(440,320); j->establecerEnSuelo(false); avanzar(h,0.5);
   exigir(j->estaEnSuelo() && abs(j->sceneBoundingRect().bottom()-h.obtenerPlataformas()[1]->superficie().top())<0.001,"No aterriza en hipopotamo");
   auto *primero=dynamic_cast<Hipopotamo *>(h.obtenerPlataformas()[1]);
   primero->actualizar(5.6-primero->faseActual()); h.actualizar(paso);
@@ -79,8 +82,16 @@ int main(int argc,char **argv) {
   exigir(h.vidasRestantes()==3 && j->x()==100 && j->estaEnSuelo(),"No reinicia hacienda al perder tres vidas");
   cout<<"OK tres vidas y reinicio de hacienda"<<endl;
   // Piloto usa los mismos controles: espera en orillas, salta y corrige A/D.
-  // No cambia posiciones, estados, velocidades ni ciclos de los hipopotamos.
+  // Esta regresion de saltos y lianas usa fases conocidas para ser reproducible.
+  // Las fases aleatorias se verifican aparte en prueba_azar_camuflaje.cpp.
   h.reiniciar();
+  const qreal fasesPrueba[] = {0, 7.7, 6.9, 0.4, 8.1, 7.3, 0.8, 0};
+  int indiceHip = 0;
+  for (auto *p : h.obtenerPlataformas()) {
+    if (auto *hip = dynamic_cast<Hipopotamo *>(p)) {
+      hip->actualizar(fmod(fasesPrueba[indiceHip++] - hip->faseActual() + 8.5, 8.5));
+    }
+  }
   int destino=1; int saltos=0; bool inicioVuelo=false; int ultimaVida=3;
   for(int i=0;i<120*180 && h.obtenerEstado()!=Hacienda::Completado;++i) {
     if(h.obtenerEstado()!=Hacienda::EnJuego) { h.actualizar(paso); continue; }

@@ -1,0 +1,43 @@
+ACTUALIZACION: HIPOPOTAMOS Y CAMUFLAJE
+
+Instalacion
+1. Cierra el juego.
+2. Conserva una copia de tu proyecto antes de reemplazar archivos.
+3. Copia el contenido de la carpeta PerryOperacionMedellin de este ZIP
+   sobre Codigo/PerryOperacionMedellin, donde esta tu CMakeLists.txt.
+   Acepta reemplazar los archivos. No crees otra carpeta anidada.
+4. Abre el proyecto con tu kit Desktop Qt 6.10.3 MinGW 64-bit.
+5. Ejecuta Run CMake y luego Ctrl+B.
+
+Cambios
+- Cada hipopotamo recibe una fase aleatoria cuando se reinicia el rio.
+  Ya no usan la secuencia fija de izquierda a derecha. El patron vuelve
+  a cambiar al pulsar R o agotar las vidas del rio; perder solo una vida
+  mantiene los ciclos en marcha. Dentro de un intento, el periodo sigue
+  siendo 8,5 segundos. Puede haber coincidencias por azar.
+- Se conservan posiciones, sprites, altura, fisica y aviso de un segundo
+  antes de la inmersion. Conviene esperar en las orillas.
+- Camuflaje de la casa: dos activaciones por intento, cuatro segundos
+  cada una. C activa o cancela; cancelar no devuelve el uso.
+- Al agotarlos, C ya no activa el camuflaje. El indicador muestra 2/2,
+  1/2 o 0/2. La captura, la alarma agotada o R reinician la casa y reponen
+  los dos usos. La transformacion de la entrada a la hacienda no cambia.
+
+Codigo
+jugador.h/.cpp: contador y limite de activaciones.
+nivel.cpp: contador visible.
+mainwindow.cpp: texto de controles.
+hipopotamo.h/.cpp: desfase aleatorio con QRandomGenerator de Qt.
+hacienda.cpp: elimina los desfases fijos al crear los hipopotamos.
+CMakeLists.txt: registra la nueva prueba opcional.
+pruebas/prueba_azar_camuflaje.cpp: verifica limite, cancelacion, duracion,
+reinicio, contador, fases aleatorias y reuso de objetos.
+pruebas/prueba_lianas.cpp: adapta la preparacion de la prueba fisica al
+reinicio aleatorio (ya no supone que el primer hipopotamo inicia arriba).
+
+Se incluye un parche de texto para revisar exactamente los cambios.
+No es necesario instalar bibliotecas nuevas.
+
+Verificacion: compilado y probado en Linux con Qt 6.8.2.
+Pruebas de limite y reinicios: correctas. Regresion de salto y lianas: correcta
+con fases controladas para que sea reproducible. Falta probar en tu Windows.
