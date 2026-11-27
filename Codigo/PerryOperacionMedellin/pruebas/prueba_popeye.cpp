@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "arenapopeye.h"
 #include "popeye.h"
 #include "jugador.h"
@@ -256,7 +257,7 @@ int main(int argc, char** argv)
             "Reinicio recrea objetos o conserva aprendizaje");
         cout << "OK victoria real, derrota unica, memoria y cien reinicios" << endl;
         MainWindow ventana;
-        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
+        ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* nivel = ventana.findChild<Nivel*>();

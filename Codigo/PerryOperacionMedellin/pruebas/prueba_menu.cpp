@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "mainwindow.h"
 #include "nivel.h"
 #include "jugador.h"
@@ -31,7 +32,7 @@ int main(int argc, char** argv)
     try
     {
         MainWindow ventana;
-        ventana.show();
+        ventana.show(); ventana.findChild<Introduccion *>()->terminar();
         app.processEvents();
         auto* lista = ventana.findChild<QListWidget*>("listaModos");
         auto* pantallas = ventana.findChild<QStackedWidget*>("pantallas");

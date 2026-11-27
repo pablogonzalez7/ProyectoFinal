@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "desenlace.h"
 #include "escobar.h"
 #include "jugador.h"
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
         exigir(audioUnidad.findChildren<QMediaPlayer*>().size() == 1, "Duplica reproductores");
         cout << "OK MP3 real, bucles, continuidad, pausa, reinicio y victoria unica" << endl;
         MainWindow ventana;
-        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
+        ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* audio = ventana.findChild<AudioJuego*>();

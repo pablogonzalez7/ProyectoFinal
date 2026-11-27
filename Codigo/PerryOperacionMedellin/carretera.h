@@ -1,6 +1,7 @@
 #ifndef CARRETERA_H
 #define CARRETERA_H
 #include <QGraphicsScene>
+#include "dificultad.h"
 #include <QString>
 #include <QPixmap>
 #include <QRandomGenerator>
@@ -11,6 +12,7 @@ class Vehiculo;
 class Obstaculo;
 class Proyectil;
 class QGraphicsEllipseItem;
+class QGraphicsPixmapItem;
 class QGraphicsLineItem;
 class QGraphicsSimpleTextItem;
 class Carretera : public QGraphicsScene {
@@ -28,10 +30,13 @@ public:
     void actualizar(qreal segundos);
     void establecerDireccion(int direccion);
     void reiniciar();
+    void establecerDificultad(Dificultad nueva);
+    Dificultad dificultadActual() const { return dificultad; }
     QString informacionActual() const;
     qreal distanciaRecorrida() const { return distancia; }
     Vehiculo *obtenerVehiculo() const { return vehiculo; }
     const array<Obstaculo *,ConfiguracionCarretera::cantidadObstaculos> &obtenerObstaculos() const { return obstaculos; }
+    int cantidadPerseguidores() const { return dificultad == Dificultad::Dificil ? 2 : 1; }
     int cantidadChoques() const { return choques; }
     bool estaEnLodo() const { return enLodo; }
 signals:
@@ -43,6 +48,7 @@ signals:
 protected:
     void drawBackground(QPainter *, const QRectF &) override;
 private:
+    Dificultad dificultad = Dificultad::Normal;
     Vehiculo *vehiculo; // Lo libera la escena.
     QRectF calzada{240,0,480,540};
     qreal desplazamiento=0, distancia=0;
@@ -57,6 +63,15 @@ private:
     QString ultimoIndicador;
     Estado estado=Conduciendo;
     Vehiculo *perseguidor=nullptr;
+    Vehiculo *segundoPerseguidor=nullptr;
+    QGraphicsLineItem *segundoAviso=nullptr;
+    qreal segundoDisparo=4;
+    QPointF segundoDestino;
+    array<QPixmap,2> spritesEdificios;
+    array<QGraphicsPixmapItem *,6> edificios{};
+    void colocarEdificio(int indice, qreal altura);
+    void actualizarEdificios(qreal avance);
+    void actualizarDisparo(Vehiculo *, QGraphicsLineItem *, qreal &, QPointF &, qreal);
     QGraphicsEllipseItem *dibujoEscudo=nullptr;
     QGraphicsLineItem *avisoDisparo=nullptr;
     QGraphicsSimpleTextItem *avisoFinal=nullptr;

@@ -98,12 +98,20 @@ void Jugador::cargarSprites()
     }
 }
 
+void Jugador::establecerDificultad(Dificultad nueva)
+{
+    maximoCamuflajes = nueva == Dificultad::Facil ? -1 : nueva == Dificultad::Dificil ? 0 : 2;
+    if (camuflado) alternarCamuflaje();
+    usosCamuflaje = maximoCamuflajes;
+    emit camuflajeCambiado(false);
+}
+
 void Jugador::alternarCamuflaje()
 {
     if (modoPlataformas) return;
     if (!camuflado) {
         if (usosCamuflaje == 0) return;
-        --usosCamuflaje; // Solo se consume al activar, nunca al cancelar.
+        if (usosCamuflaje > 0) --usosCamuflaje; // Solo se consume al activar, nunca al cancelar.
     }
     camuflado = !camuflado;
     tiempoCamuflaje = camuflado ? ConfiguracionCasa::duracionCamuflaje : 0.0;

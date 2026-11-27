@@ -26,12 +26,12 @@ QRectF Popeye::boundingRect() const
 {
     return QRectF(0, 0, 44, 64);
 }
-void Popeye::reiniciar()
+void Popeye::reiniciar(int vidasIniciales)
 {
     memoria = MemoriaCombate();
     danosRecientes.clear();
     aleatorio.seed(73);
-    resistencia = resistenciaMaxima;
+    resistencia = qBound(1, vidasIniciales, resistenciaMaxima);
     reloj = 0;
     esperaMovimiento = 2;
     poseDisparo = 0;

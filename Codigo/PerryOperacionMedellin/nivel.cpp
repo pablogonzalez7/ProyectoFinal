@@ -427,7 +427,9 @@ void Nivel::actualizarIndicador()
     QString modo = jugador->estaCamuflado()
         ? QString("CAMUFLADO: %1 s").arg(qCeil(jugador->segundosCamuflaje()))
         : "AGENTE";
-    modo += QString(" | Camuflajes: %1/2").arg(jugador->camuflajesRestantes());
+    if (dificultad == Dificultad::Facil) modo += " | Camuflajes: ilimitados";
+    else if (dificultad == Dificultad::Dificil) modo += " | Sin camuflaje";
+    else modo += QString(" | Camuflajes: %1/2").arg(jugador->camuflajesRestantes());
     const QString reloj = alarma ? QString("ALARMA: %1 s").arg(qCeil(tiempoRestante)) : "Alarma inactiva";
     QString objetivo = alarma ? "Sal por la puerta verde antes de que termine el tiempo."
                               : "Llaves: bodega y oficina. Quieto con sombrero 1,2 s para recoger.";
@@ -670,6 +672,8 @@ QPointF Nivel::moverPersonaje(Personaje* personaje, const QPointF& desplazamient
 void Nivel::establecerDificultad(Dificultad nueva)
 {
     dificultad = nueva;
+    jugador->establecerDificultad(nueva);
+    marcarInformacion();
     for (Villano* guardia : guardias)
         guardia->establecerDificultad(nueva);
 }

@@ -1,0 +1,103 @@
+INTRODUCCION ANIMADA - PERRY: OPERACION MEDELLIN
+
+INSTALACION
+Esta actualizacion se aplica despues de los corazones y del menu con letras
+Grandes. Conserva todos esos cambios.
+
+1. Cierra el juego y guarda una copia de tu proyecto.
+2. Extrae Actualizacion_Introduccion_Perry.zip.
+3. Copia TODO el contenido de su carpeta PerryOperacionMedellin a la carpeta
+   actual de tu proyecto, donde esta CMakeLists.txt. Combina las carpetas
+   imagenes, sonidos y pruebas, y reemplaza los archivos existentes.
+   No crees otra carpeta PerryOperacionMedellin dentro del proyecto.
+4. En Qt Creator: Projects > Build Settings > Run CMake.
+5. Compila con Ctrl+B y ejecuta el juego.
+
+COMPORTAMIENTO
+- Al abrir el juego aparece una cinematica de 48 segundos antes del menu.
+- Enter normal o Enter numerico permite saltarla. Se consume la pulsacion
+  completa para que no seleccione tambien una dificultad por accidente.
+- M silencia/restaura la musica de la introduccion.
+- Al terminar aparece inmediatamente el menu con FACIL, NORMAL y DIFICIL.
+- Nueva partida vuelve al menu; no repite la introduccion durante esa sesion.
+- Al cambiar a otra aplicacion, la cinematica y su musica se pausan.
+- Perry permanece sin dialogos ni voces. Doofenshmirtz y Escobar hablan
+  mediante subtitulos originales creados para esta historia.
+
+SECUENCIA
+00-10: Perry llega al laboratorio y Doofenshmirtz presenta su invento.
+10-19: pelea comica con saltos, golpes y reaccion del doctor.
+19-28: el doctor golpea accidentalmente el boton; se abre el portal
+       y Perry es arrastrado hacia el.
+28-30: viaje por el portal.
+30-37: llegada a la Hacienda Napoles ante Escobar, Popeye y policias.
+37-42: Escobar ordena encerrarlo en la casa y poner guardias.
+42-48: traslado hacia la casa, cierre y fundido al menu.
+
+IMPLEMENTACION
+Es una cinematica 2D con sprites animados directamente en Qt.
+Introduccion hereda de QWidget y usa QTimer con SIGNAL(timeout()) y un slot
+animar(). QElapsedTimer mide el tiempo transcurrido. Se dibuja con QPainter.
+Los fondos y personajes se cargan una sola vez. El portal reutiliza su
+formula, y no se crean personajes ni fisicas de niveles en cada cuadro.
+El QStackedWidget de MainWindow coloca la intro antes del menu y recibe
+la senal terminada(). El temporizador y la musica se detienen al salir.
+Los objetos Qt tienen padre y se liberan automaticamente al cerrar.
+No requiere un reproductor externo ni conexion a internet para ejecutarse.
+
+MUSICA
+sonidos/intro_original.wav: pista instrumental original sintetizada para
+esta introduccion. Accion electronica al comienzo, transicion de portal
+y motivo alegre de marimba sintetica y percusion en la hacienda.
+48 segundos, PCM de 16 bits, 44100 Hz, dos canales. No contiene voces ni
+fragmentos de la banda sonora de la serie. Se reproduce con QMediaPlayer.
+Si Windows no reproduce el tono de prueba del dispositivo, hay que resolver
+ese problema de salida de audio para escuchar tambien la introduccion.
+Una falla del audio no impide terminar ni saltar la cinematica.
+
+RECURSOS Y CREDITOS
+- Perry, Popeye, Escobar y policias: atlas ya incluidos en el proyecto.
+- intro_laboratorio.png e intro_hacienda.png: fondos nuevos creados con
+  la herramienta integrada de generacion de imagenes.
+- intro_doof.png e intro_doof_accion.png: imagenes de Doofenshmirtz de
+  PNG Gallery. Credito: PNG Gallery / personajes de Disney.
+  Pagina: https://pnggallery.com/dr-heinz-doofenshmirtz/
+  Fuentes:
+  https://pnggallery.com/wp-content/uploads/dr-heinz-doofenshmirtz-01.png
+  https://pnggallery.com/wp-content/uploads/dr-heinz-doofenshmirtz-02.png
+  La pagina indica CC BY-NC 4.0; esa indicacion del sitio no transfiere
+  los derechos sobre los personajes de Disney.
+
+DESCRIPCIONES DE LOS FONDOS GENERADOS
+Laboratorio: laboratorio de Doofenshmirtz en un edificio alto al atardecer,
+paredes angulares violetas, ventana con ciudad, consolas y cables, maquina
+con anillo de portal inactivo a la derecha y boton rojo. Suelo inferior
+libre para los actores, estilo cartoon 2D, sin personajes ni texto.
+Hacienda: patio tropical colombiano inspirado en Hacienda Napoles, casa
+principal crema con tejas rojas, arcos, palmeras y montanas, casa pequena
+a la izquierda con puerta visible. Patio despejado para los actores,
+estilo cartoon 2D, sin personajes ni texto.
+
+ARCHIVOS PRINCIPALES
+introduccion.h/.cpp: secuencia, subtitulos, musica y tecla para saltar.
+mainwindow.h/.cpp: integracion antes del menu.
+CMakeLists.txt: clase nueva, imagenes y musica en recursos Qt.
+pruebas/prueba_introduccion.cpp: transicion natural y salto con ambos Enter.
+Las pruebas anteriores que abren MainWindow ahora saltan explicitamente
+la introduccion antes de comprobar las mecanicas del juego.
+
+VALIDACION
+Se compilo el juego con Qt 6.8.2 en Linux. Pasaron la prueba nueva de
+introduccion y la prueba existente del menu: final natural a los 48 s,
+ambos Enter, autorepeticion, foco, seleccion con flechas, inicio de partida,
+parada de la musica y nueva partida sin repetir la intro.
+Se revisaron capturas de las dos escenas y se exporto una vista previa
+MP4 desde la misma animacion Qt, con su pista musical.
+El entorno no tiene dispositivo de audio; falta comprobar la salida
+audible y la compilacion en tu Windows. No se ejecuto la suite completa
+de pruebas de todos los niveles en esta entrega.
+
+VISTA PREVIA
+Vista_previa_introduccion.mp4 esta en la raiz del ZIP. Sirve para ver
+la secuencia antes de instalarla. No hay que copiar ese MP4 al proyecto: 
+la introduccion del juego se dibuja directamente en Qt.

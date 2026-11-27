@@ -8,7 +8,9 @@
 
 using namespace std;
 
+class Introduccion;
 class Nivel;
+class VistaJuego;
 class Carretera;
 class Hacienda;
 class EntradaHacienda;
@@ -74,14 +76,16 @@ private:
     bool procesarTecla(QKeyEvent* evento);
     void actualizarTitulo();
     void actualizarDireccion();
+    void actualizarMarcador();
 
     Ui::MainWindow* interfaz;
     QStackedWidget* pantallas = nullptr;
     QListWidget* listaModos = nullptr;
+    Introduccion* introduccion = nullptr;
     bool enMenu = true;
 
     Nivel* escena;
-    QGraphicsView* vista;
+    VistaJuego* vista;
     Jugador* jugador;
 
     QTimer* temporizador;

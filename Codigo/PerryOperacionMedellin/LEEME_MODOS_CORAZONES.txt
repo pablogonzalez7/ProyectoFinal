@@ -1,0 +1,92 @@
+ACTUALIZACION: CORAZONES Y MODOS DE JUEGO
+26 de noviembre de 2026
+
+COMO INSTALAR
+1. Cierra el juego y guarda una copia de tu proyecto actual.
+2. Extrae Actualizacion_Modos_Corazones.zip.
+3. Abre la carpeta PerryOperacionMedellin del ZIP y copia TODO SU CONTENIDO
+   dentro de tu carpeta actual Codigo/PerryOperacionMedellin, donde esta
+   CMakeLists.txt. Acepta combinar carpetas y reemplazar archivos.
+   No metas otra carpeta PerryOperacionMedellin dentro de la existente.
+4. En Qt Creator, abre el CMakeLists.txt del proyecto y pulsa Run CMake
+   (Projects > Build Settings), despues Ctrl+B y finalmente Ejecutar.
+   Usa tu kit de Qt con Multimedia que ya compilaba el juego.
+
+El ZIP contiene solo archivos nuevos o modificados. Necesita el proyecto
+completo que ya tienes; no es un juego independiente ni un ejecutable.
+
+VIDAS DENTRO DE LA PANTALLA
+- Perry: etiqueta PERRY: y corazones rojos arriba a la izquierda.
+- Popeye: etiqueta POPEYE: y corazones rojos arriba a la derecha.
+- Cada corazon corresponde a una vida real y desaparece al perderla.
+- Casa: un corazon porque una captura reinicia esa seccion; no se agrego
+  un contador de vidas nuevo. Durante el estado de captura queda en cero.
+- Carretera, rio y entrada: tres corazones iniciales en cada seccion.
+- Combate: Perry empieza con cinco; Popeye con cinco en facil y diez
+  en normal/dificil. El desenlace conserva las vidas restantes de Perry.
+- El marcador queda fijo aunque se desplace la camara.
+
+FACIL
+- Camuflaje ilimitado en la casa (puedes activarlo de nuevo cada vez).
+- Un carro perseguidor y un escolta antes del combate.
+- Hipopotamos con desfases fijos, en secuencia por tramo del rio.
+- Popeye tiene cinco vidas, igual que Perry.
+- Las balas de Popeye y Perry chocan con las tres barreras.
+
+NORMAL
+- Dos usos de camuflaje por intento en la casa.
+- Un carro perseguidor y dos escoltas antes del combate.
+- Hipopotamos con fases aleatorias al reiniciar.
+- Perry cinco vidas y Popeye diez en combate.
+- Las balas de ambos chocan con las barreras.
+
+DIFICIL
+- Perry no puede camuflarse en la casa.
+- Dos carros de policia persiguen a Perry y disparan.
+- Cuatro escoltas antes del combate. Cada uno dispara cada 0.8 segundos
+  mientras esta atacando, frente a 1.5 segundos en los otros modos.
+- Hipopotamos con fases aleatorias al reiniciar.
+- Perry cinco vidas y Popeye diez en combate.
+- Balas directas y proyectiles oscilatorios de Popeye atraviesan las
+  barreras del escenario. Siguen golpeando a Perry y su escudo.
+- Las balas de Perry siguen chocando con las tres barreras.
+
+CARRETERA EN LOS TRES MODOS
+- Casas y edificios separados sobre el llano de ambos costados.
+- Cada decoracion se elige independientemente al azar; pueden repetirse
+  varias casas o edificios consecutivos. No se fuerza una alternancia.
+- Se reutilizan seis objetos graficos al salir de pantalla.
+- Contador blanco grande dentro del escenario: 450 mts / 1200 mts.
+  El primer numero es la distancia recorrida; el segundo es la meta.
+
+DONDE SE IMPLEMENTO
+- vistajuego.h/.cpp: dibujo fijo de corazones y contador.
+- mainwindow.h/.cpp: actualiza el marcador desde las vidas reales y
+  transmite el modo elegido a las escenas, incluidos sus reinicios.
+- jugador.h/.cpp y nivel.cpp: limite de usos del camuflaje.
+- carretera.h/.cpp: segundo perseguidor y decoracion reutilizable.
+- hacienda.h/.cpp e hipopotamo.h/.cpp: secuencia facil o fases aleatorias.
+- entradahacienda.h/.cpp: cantidad de escoltas y ritmo de disparo.
+- arenapopeye.h/.cpp y popeye.h/.cpp: vidas y colisiones segun modo.
+- desenlace.cpp: informacion final sin el antiguo denominador de vidas.
+- CMakeLists.txt: registra los nuevos archivos y recurso grafico.
+
+VALIDACION REALIZADA
+- Compilacion C++17 con Qt 6.8.2 en Linux.
+- Prueba nueva pruebas/prueba_modos_corazones.cpp: paso en los tres modos.
+  Comprueba camuflaje, fases de hipopotamos, escoltas, ritmo de disparo,
+  balas de ambos personajes contra las tres barreras, dano y escudo,
+  transiciones, reinicios, corazones y contador hasta 1200 metros.
+- Revision visual de capturas del juego, incluido combate y carretera.
+- Falta confirmar compilacion y juego en tu Windows. Este entorno no tiene
+  dispositivo de sonido; no se comprobo reproduccion audible.
+- Las pruebas antiguas no se ejecutaron como suite completa en esta entrega.
+
+SPRITE NUEVO
+imagenes/casas_edificios.png: atlas transparente de dos sprites generado
+con la herramienta de imagenes. Qt separa las dos mitades, recorta sus
+margenes transparentes y prepara las imagenes una sola vez.
+Descripcion utilizada: una casa rural colombiana con techo de tejas rojas,
+paredes crema y puerta azul; separado, un edificio de cuatro pisos beige,
+ventanas turquesa y techo plano. Estilo cartoon para carretera 2D, objetos
+separados, sin texto, personas ni calles, sobre fondo transparente.

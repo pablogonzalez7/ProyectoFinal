@@ -348,9 +348,7 @@ void Desenlace::actualizar(qreal segundos)
 QString Desenlace::informacionActual() const
 {
     if (estado == Dialogo || estado == Eleccion)
-        return QString(
-            "Dimensionador recuperado | Corazones conservados: %1/6. Tu decision cierra la mision.")
-            .arg(corazones);
+        return "Dimensionador recuperado. Conservas tus vidas. Tu decision cierra la mision.";
     if (estado == Advertencia)
         return "TRAICION! Preparate: puedes moverte, saltar y usar el escudo.";
     if (estado == Combate)
@@ -358,10 +356,8 @@ QString Desenlace::informacionActual() const
         const QString carga = tiempoEscudo > 0 ? "ACTIVO"
             : recargaEscudo > 0                ? QString::number(qCeil(recargaEscudo)) + " s"
                                                : "LISTO (E)";
-        return QString("Corazones: %1/6 | Escudo: %2\nSalta y pulsa Enter para alcanzar su cabeza. Si pierdes, "
-                       "vuelves al inicio del juego.")
-            .arg(corazones)
-            .arg(carga);
+        return QString("Escudo: %1\nSalta y pulsa Enter para alcanzar su cabeza. Si pierdes, "
+                       "vuelves al inicio del juego.").arg(carga);
     }
     if (estado == Entrega)
         return "Escobar queda bajo custodia. El dimensionador esta listo para volver.";

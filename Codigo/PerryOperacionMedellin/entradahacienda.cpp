@@ -25,9 +25,17 @@ EntradaHacienda::EntradaHacienda(QObject *padre)
     zonaGolpe->setBrush(Qt::NoBrush);
     guardias[0]=new GuardiaEntrada(550);
     guardias[1]=new GuardiaEntrada(760);
+    guardias[2]=new GuardiaEntrada(650);
+    guardias[3]=new GuardiaEntrada(850);
     for (auto *guardia : guardias) addItem(guardia);
     for (auto &bala : balas) { bala=new Proyectil; addItem(bala); }
     reiniciar();
+}
+void EntradaHacienda::establecerDificultad(Dificultad nueva)
+{
+    dificultad = nueva;
+    cantidadGuardias = nueva == Dificultad::Facil ? 1 : nueva == Dificultad::Dificil ? 4 : 2;
+    intervaloDisparo = nueva == Dificultad::Dificil ? 0.8 : 1.5;
 }
 void EntradaHacienda::reiniciar()
 {
@@ -40,13 +48,17 @@ void EntradaHacienda::reiniciar()
     esperaDerrota=0;
     golpeUsado=false;
     derrotaEmitida=false;
-    esperaDisparo={1.5,2.15};
+    for (int i=0; i<4; ++i) esperaDisparo[i]=intervaloDisparo+i*0.25;
     jugador->restablecer();
     jugador->setOpacity(1);
     jugador->setPos(70,376);
     jugador->aterrizar(420);
     jugador->establecerDisfrazEntrada(true);
-    for (auto *guardia : guardias) guardia->reiniciar();
+    for (int i=0; i<4; ++i) {
+        guardias[i]->reiniciar();
+        guardias[i]->setVisible(i<cantidadGuardias);
+        if (i>=cantidadGuardias) guardias[i]->cambiarEstado(GuardiaEntrada::Inconsciente);
+    }
     for (auto *bala : balas) bala->desactivar();
     emit controlesLiberados();
     publicarInformacion();
@@ -69,7 +81,7 @@ void EntradaHacienda::transformar()
     emit sonidoSolicitado(Sonido::Camuflaje);
     sorpresa=3;
     jugador->establecerDisfrazEntrada(false);
-    for (auto *guardia : guardias) guardia->cambiarEstado(GuardiaEntrada::Sorprendido);
+    for (int i=0; i<cantidadGuardias; ++i) guardias[i]->cambiarEstado(GuardiaEntrada::Sorprendido);
     publicarInformacion();
 }
 void EntradaHacienda::golpear()
@@ -103,7 +115,10 @@ void EntradaHacienda::actualizarGolpe()
             break;
         }
     }
-    if (!guardias[0]->estaActivo() && !guardias[1]->estaActivo()) {
+    bool todosVencidos=true;
+    for (int i=0; i<cantidadGuardias; ++i)
+        if (guardias[i]->estaActivo()) todosVencidos=false;
+    if (todosVencidos) {
         estado=Despejada;
         emit sonidoSolicitado(Sonido::Victoria);
         for (auto *bala : balas) bala->desactivar();
@@ -154,14 +169,14 @@ void EntradaHacienda::actualizarPaso(qreal dt)
                 if (guardia->estaActivo()) guardia->cambiarEstado(GuardiaEntrada::Atacando);
         }
     }
-    for (int i=0;i<2;++i) {
+    for (int i=0;i<cantidadGuardias;++i) {
         GuardiaEntrada *guardia=guardias[i];
         if (!guardia->estaActivo()) continue;
         guardia->seguir(jugador->sceneBoundingRect().center().x(),dt);
         guardia->actualizar(dt);
         if (estado==Combate) {
             esperaDisparo[i]-=dt;
-            if (esperaDisparo[i]<=0) { disparar(guardia); esperaDisparo[i]+=1.5; }
+            if (esperaDisparo[i]<=0) { disparar(guardia); esperaDisparo[i]+=intervaloDisparo; }
         }
     }
     actualizarGolpe();
@@ -199,8 +214,9 @@ QString EntradaHacienda::informacionActual() const
     else if (estado==Despejada) consejo="Escoltas inconscientes. Acercate al porton de la derecha y pulsa Enter.";
     else if (estado==Derrota) consejo="Sin corazones. Volviendo al inicio de la hacienda...";
     else consejo="Entrada superada. Entrando al combate contra Popeye...";
-    const int vencidos=int(!guardias[0]->estaActivo())+int(!guardias[1]->estaActivo());
-    return QString("Entrada vigilada | Corazones: %1/3 | Escoltas: %2/2\n%3").arg(corazones).arg(vencidos).arg(consejo);
+    int vencidos=0;
+    for (int i=0; i<cantidadGuardias; ++i) vencidos += int(!guardias[i]->estaActivo());
+    return QString("Entrada vigilada | Escoltas: %1/%2\n%3").arg(vencidos).arg(cantidadGuardias).arg(consejo);
 }
 void EntradaHacienda::publicarInformacion()
 {

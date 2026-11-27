@@ -1,5 +1,8 @@
 #include "mainwindow.h"
+#include "vistajuego.h"
+#include "popeye.h"
 #include "menuanimado.h"
+#include "introduccion.h"
 #include "ui_mainwindow.h"
 #include "configuracion.h"
 #include "jugador.h"
@@ -39,12 +42,13 @@ MainWindow::MainWindow(QWidget* padre)
 
     // Objetos Qt, como en el ejemplo de clase.
     audio = new AudioJuego(this);
+    audio->establecerPausa(true); // La musica del juego espera al menu.
     escena = new Nivel(this);
     conectarSonido(escena);
     connect(escena, SIGNAL(capturaOAlarmaAgotada()), audio, SLOT(reiniciarPerry()));
     conectarSonido(escena->obtenerJugador());
     connect(escena->obtenerJugador(), SIGNAL(camuflajeCambiado(bool)), audio, SLOT(sonarCamuflaje(bool)));
-    vista = new QGraphicsView(this);
+    vista = new VistaJuego(this);
     jugador = escena->obtenerJugador();
     temporizador = new QTimer(this);
     indicador = new QLabel(this);
@@ -57,9 +61,12 @@ MainWindow::MainWindow(QWidget* padre)
     connect(escena, SIGNAL(casaSuperada()), this, SLOT(entrarCarretera()), Qt::QueuedConnection);
 
     temporizador->setTimerType(Qt::PreciseTimer);
+    actualizarMarcador();
     tiempo.start();
     temporizador->setInterval(16); // Aproximadamente 60 actualizaciones por segundo.
     mostrarMenu();
+    pantallas->setCurrentWidget(introduccion);
+    introduccion->iniciar();
 }
 
 void MainWindow::prepararVentana()
@@ -81,7 +88,7 @@ void MainWindow::prepararVentana()
     indicador->setFont(QFont("Arial", 10));
     indicador->setStyleSheet("background:#17222b; color:#eef3f7; padding:6px;");
     indicador->setText(escena->informacionActual());
-    controles = new QLabel("WASD: mover    |    C: camuflaje (2 usos, 4 s) / cancelar    |    R: reiniciar", this);
+    controles = new QLabel("WASD: mover    |    C: camuflaje segun modo / cancelar    |    R: reiniciar", this);
     controles->setFixedHeight(28);
     controles->setStyleSheet("background:#17222b; color:#eef3f7; padding-left:8px;");
 
@@ -184,6 +191,7 @@ bool MainWindow::eventFilter(QObject* objeto, QEvent* evento)
     }
     else if (evento->type() == QEvent::FocusIn)
     {
+        actualizarMarcador();
         tiempo.start();
         temporizador->start();
         audio->establecerPausa(false);
@@ -301,8 +309,10 @@ bool MainWindow::procesarTecla(QKeyEvent* evento)
                 else
                 {
                     limpiarTeclado();
+                    arena->establecerDificultad(escena->dificultadActual());
                     arena->reiniciar();
                     audio->reiniciarMusica(Sonido::Popeye);
+                    actualizarMarcador();
                     tiempo.start();
                 }
             }
@@ -313,16 +323,20 @@ bool MainWindow::procesarTecla(QKeyEvent* evento)
                 else
                 {
                     limpiarTeclado();
+                    entrada->establecerDificultad(escena->dificultadActual());
                     entrada->reiniciar();
                     audio->reiniciarPerry();
+                    actualizarMarcador();
                     tiempo.start();
                 }
             }
             else if (enHacienda)
             {
                 limpiarTeclado();
+                hacienda->establecerDificultad(escena->dificultadActual());
                 hacienda->reiniciar();
                 audio->reiniciarPerry();
+                actualizarMarcador();
                 tiempo.start();
             }
             else
@@ -431,6 +445,17 @@ void MainWindow::moverFigura()
         escena->actualizar(segundos);
         vista->centerOn(jugador);
     }
+    actualizarMarcador();
+}
+
+void MainWindow::actualizarMarcador()
+{
+    if (enDesenlace) vista->mostrarEstado(desenlace->corazonesRestantes());
+    else if (enArena) vista->mostrarEstado(arena->corazonesRestantes(), arena->obtenerPopeye()->resistenciaActual());
+    else if (enEntrada) vista->mostrarEstado(entrada->corazonesRestantes());
+    else if (enHacienda) vista->mostrarEstado(hacienda->vidasRestantes());
+    else if (enCarretera) vista->mostrarEstado(carretera->resistenciaActual(), -1, int(carretera->distanciaRecorrida()));
+    else vista->mostrarEstado(escena->obtenerEstado() == Nivel::Reiniciando ? 0 : 1);
 }
 
 void MainWindow::actualizarTitulo()
@@ -507,6 +532,7 @@ void MainWindow::entrarCarretera()
         connect(carretera, SIGNAL(informacionCambiada(QString)), this,
             SLOT(mostrarInformacionCarretera(QString)));
     }
+    carretera->establecerDificultad(escena->dificultadActual());
     carretera->reiniciar();
     enCarretera = true;
     audio->establecerMusica(Sonido::Perry);
@@ -516,6 +542,7 @@ void MainWindow::entrarCarretera()
     controles->setText("A/D: conducir    |    E: escudo    |    Enter: entrar al nivel 2 al llegar a 1200 m    | "
                        "   R: reiniciar");
     setWindowTitle("Perry: Operacion Medellin - Carretera");
+    actualizarMarcador();
     tiempo.start();
 }
 void MainWindow::volverCasa()
@@ -533,8 +560,9 @@ void MainWindow::volverCasa()
     vista->setScene(escena);
     vista->centerOn(jugador);
     indicador->setText(escena->informacionActual());
-    controles->setText("WASD: mover    |    C: camuflaje (2 usos, 4 s) / cancelar    |    R: reiniciar");
+    controles->setText("WASD: mover    |    C: camuflaje segun modo / cancelar    |    R: reiniciar");
     setWindowTitle("Perry: Operacion Medellin - La casa");
+    actualizarMarcador();
     tiempo.start();
 }
 
@@ -557,6 +585,7 @@ void MainWindow::entrarHacienda()
     enCarretera = false;
     enHacienda = true;
     audio->establecerMusica(Sonido::Perry);
+    hacienda->establecerDificultad(escena->dificultadActual());
     hacienda->reiniciar();
     // El fondo se desplaza a otra velocidad: repintamos la vista visible.
     vista->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -566,6 +595,7 @@ void MainWindow::entrarHacienda()
     controles->setText(
         "A/D: moverse | ESPACIO: saltar/soltar | Mantener E: agarrar liana | R: reiniciar hacienda");
     setWindowTitle("Perry: Operacion Medellin - Hacienda");
+    actualizarMarcador();
     tiempo.start();
 }
 
@@ -588,6 +618,7 @@ void MainWindow::entrarZonaEscoltas()
     enHacienda = false;
     enEntrada = true;
     audio->establecerMusica(Sonido::Perry);
+    entrada->establecerDificultad(escena->dificultadActual());
     entrada->reiniciar();
     vista->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
     vista->setScene(entrada);
@@ -596,6 +627,7 @@ void MainWindow::entrarZonaEscoltas()
     controles->setText(
         "A/D: mover | ESPACIO: saltar | C: transformarse | Enter: patada / entrar | R: reintentar escoltas");
     setWindowTitle("Perry: Operacion Medellin - Entrada vigilada");
+    actualizarMarcador();
     tiempo.start();
 }
 void MainWindow::reiniciarHacienda()
@@ -610,6 +642,7 @@ void MainWindow::reiniciarHacienda()
     enArena = false;
     enHacienda = true;
     audio->reiniciarPerry();
+    hacienda->establecerDificultad(escena->dificultadActual());
     hacienda->reiniciar();
     vista->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     vista->setScene(hacienda);
@@ -618,6 +651,7 @@ void MainWindow::reiniciarHacienda()
     controles->setText(
         "A/D: moverse | ESPACIO: saltar/soltar | Mantener E: agarrar liana | R: reiniciar hacienda");
     setWindowTitle("Perry: Operacion Medellin - Hacienda");
+    actualizarMarcador();
     tiempo.start();
 }
 void MainWindow::mostrarInformacionEntrada(const QString& texto)
@@ -645,6 +679,7 @@ void MainWindow::entrarArena()
     enEntrada = false;
     enArena = true;
     audio->reiniciarMusica(Sonido::Popeye);
+    arena->establecerDificultad(escena->dificultadActual());
     arena->reiniciar();
     vista->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
     vista->setScene(arena);
@@ -655,6 +690,7 @@ void MainWindow::entrarArena()
     controles->setText("A/D: mover | ESPACIO: saltar | CLIC: disparar | Enter: golpear | E: escudo | Q: agilidad "
                        "| R: reintentar");
     setWindowTitle("Perry: Operacion Medellin - Combate contra Popeye");
+    actualizarMarcador();
     tiempo.start();
 }
 void MainWindow::mostrarInformacionArena(const QString& texto)
@@ -689,6 +725,7 @@ void MainWindow::entrarDesenlace()
     indicador->setText(desenlace->informacionActual());
     mostrarInformacionDesenlace(desenlace->informacionActual());
     actualizarTitulo();
+    actualizarMarcador();
     tiempo.start();
 }
 void MainWindow::mostrarInformacionDesenlace(const QString& texto)
@@ -725,11 +762,11 @@ void MainWindow::nuevaPartidaConfigurada()
 void MainWindow::describirDificultad(int indice)
 {
     if (indice == 0)
-        descripcionDificultad->setText("Facil: pierden tu rastro al dejar de verte.");
+        descripcionDificultad->setText("Facil: camuflaje ilimitado, 1 escolta y Popeye con 5 vidas.");
     else if (indice == 2)
-        descripcionDificultad->setText("Dificil: se avisan y revisan sectores.");
+        descripcionDificultad->setText("Dificil: sin camuflaje, 2 carros, 4 escoltas y balas que atraviesan barreras.");
     else
-        descripcionDificultad->setText("Normal: investigan la ultima posicion.");
+        descripcionDificultad->setText("Normal: 2 camuflajes, 2 escoltas y Popeye con 10 vidas.");
 }
 
 void MainWindow::prepararMenu(QWidget* pantallaJuego)
@@ -752,17 +789,22 @@ void MainWindow::prepararMenu(QWidget* pantallaJuego)
     listaModos->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listaModos->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listaModos->setStyleSheet(
-        "QListWidget { background:transparent; border:0; outline:0; font-family:Arial;"
-        " font-size:17px; font-weight:bold; }"
-        "QListWidget::item { background:#1c3b4a; color:#d9e8eb; border:2px solid #426878;"
-        " border-radius:14px; margin:4px 2px; padding:10px 14px; }"
-        "QListWidget::item:selected { background:#116f67; border:3px solid #ffe477; color:#fff8d0; }");
-    listaModos->addItems({
-        "FÁCIL\nPierden tu rastro al ocultarte.",
-        "NORMAL\nInvestigan tu última posición.",
-        "DIFÍCIL\nSe avisan y revisan sectores." });
-    for (int i = 0; i < listaModos->count(); ++i)
+        "QListWidget { background:transparent; border:0; outline:0;"
+        " font-family:'Arial Black',Arial; font-size:34px; font-weight:900;"
+        " font-style:italic; }"
+        "QListWidget::item { background:qlineargradient(x1:0,y1:0,x2:1,y2:1,"
+        " stop:0 #174b61,stop:1 #0b243b); color:#e6fcff;"
+        " border:2px solid #3b899a; border-radius:18px;"
+        " margin:4px 2px; padding:4px 14px; }"
+        "QListWidget::item:selected { background:qlineargradient(x1:0,y1:0,x2:1,y2:1,"
+        " stop:0 #fff29a,stop:0.48 #ffd447,stop:1 #ffae32);"
+        " border:3px solid #fff5ba; color:#102e42; }"
+        "QListWidget::item:hover:!selected { border:2px solid #75e9de; }");
+    listaModos->addItems({ "FÁCIL", "NORMAL", "DIFÍCIL" });
+    for (int i = 0; i < listaModos->count(); ++i) {
         listaModos->item(i)->setSizeHint(QSize(0, 78));
+        listaModos->item(i)->setTextAlignment(Qt::AlignCenter);
+    }
     listaModos->setFixedHeight(242);
     listaModos->setCurrentRow(1);
     listaModos->installEventFilter(this);
@@ -773,6 +815,9 @@ void MainWindow::prepararMenu(QWidget* pantallaJuego)
     distribucion->addWidget(ayuda);
     pantallas->addWidget(menu);
     pantallas->addWidget(pantallaJuego);
+    introduccion = new Introduccion(pantallas);
+    pantallas->addWidget(introduccion);
+    connect(introduccion, SIGNAL(terminada()), this, SLOT(mostrarMenu()));
     setCentralWidget(pantallas);
     // La jerarquia de padres Qt libera ambas pantallas y sus controles.
 }
@@ -792,7 +837,7 @@ void MainWindow::mostrarMenu()
 
 void MainWindow::elegirModo()
 {
-    if (!enMenu || listaModos->currentRow() < 0) return;
+    if (!enMenu || (introduccion && introduccion->estaActiva()) || listaModos->currentRow() < 0) return;
     const int elegido = listaModos->currentRow();
     selectorDificultad->setCurrentIndex(elegido);
     escena->establecerDificultad(static_cast<Dificultad>(elegido));
@@ -801,6 +846,7 @@ void MainWindow::elegirModo()
     pantallas->setCurrentIndex(1);
     vista->setFocus();
     audio->establecerPausa(false);
+    actualizarMarcador();
     tiempo.start();
     temporizador->start();
 }

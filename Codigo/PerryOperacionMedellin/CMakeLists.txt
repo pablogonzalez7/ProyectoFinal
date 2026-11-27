@@ -11,6 +11,8 @@ qt_standard_project_setup()
 qt_add_executable(PerryOperacionMedellin
     WIN32 MACOSX_BUNDLE
     main.cpp
+    vistajuego.h vistajuego.cpp
+    introduccion.h introduccion.cpp
     mainwindow.cpp
     mainwindow.h
     menuanimado.h menuanimado.cpp
@@ -84,6 +86,12 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
         imagenes/suelo_hacienda.png
         imagenes/asfalto_carretera.png
         imagenes/llano_carretera.png
+        imagenes/intro_laboratorio.png
+        imagenes/intro_hacienda.png
+        imagenes/intro_doof.png
+        imagenes/intro_doof_accion.png
+        sonidos/intro_original.wav
+        imagenes/casas_edificios.png
         imagenes/panorama_hacienda.png
         imagenes/popeye.png
         imagenes/interior_hacienda.png
@@ -108,10 +116,12 @@ qt_add_resources(PerryOperacionMedellin "imagenes_juego"
 option(CONSTRUIR_PRUEBAS "Compilar pruebas de casa y hacienda" OFF)
 if(CONSTRUIR_PRUEBAS)
     enable_testing()
-    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica menu azar_camuflaje)
+    foreach(prueba IN ITEMS casa lianas margenes entrada popeye desenlace audio_dificultad musica menu azar_camuflaje modos_corazones introduccion)
         qt_add_executable(pruebas_${prueba}
             pruebas/prueba_${prueba}.cpp
-            mainwindow.h mainwindow.cpp mainwindow.ui
+            mainwindow.h mainwindow.cpp
+            vistajuego.h vistajuego.cpp mainwindow.ui
+            introduccion.h introduccion.cpp
             menuanimado.h menuanimado.cpp
             personaje.h personaje.cpp
             jugador.h jugador.cpp
@@ -161,6 +171,12 @@ if(CONSTRUIR_PRUEBAS)
                 imagenes/suelo_hacienda.png
                 imagenes/asfalto_carretera.png
                 imagenes/llano_carretera.png
+                imagenes/intro_laboratorio.png
+                imagenes/intro_hacienda.png
+                imagenes/intro_doof.png
+                imagenes/intro_doof_accion.png
+                sonidos/intro_original.wav
+                imagenes/casas_edificios.png
                 imagenes/panorama_hacienda.png
                 imagenes/popeye.png
                 imagenes/interior_hacienda.png

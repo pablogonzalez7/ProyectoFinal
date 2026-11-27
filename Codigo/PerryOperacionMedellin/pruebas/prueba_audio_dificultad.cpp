@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "audiojuego.h"
 #include "dificultad.h"
 #include "jugador.h"
@@ -160,7 +161,7 @@ int main(int argc, char** argv)
              << endl;
 
         MainWindow ventana;
-        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
+        ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         for (auto* reloj : ventana.findChildren<QTimer*>())
             reloj->stop();

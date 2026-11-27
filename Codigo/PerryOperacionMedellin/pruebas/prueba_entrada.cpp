@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "entradahacienda.h"
 #include "guardiaentrada.h"
 #include "jugador.h"
@@ -114,7 +115,7 @@ int main(int argc,char **argv) {
     exigir(e.items().size()==cantidad && e.obtenerGuardias()==guardias && e.obtenerProyectiles()==balas,"Reinicio recrea objetos");
     cout<<"OK inmunidad, derrota unica y cien reinicios con los mismos objetos"<<endl;
     // Integracion de escenas y teclado de la ventana real.
-    MainWindow ventana;ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);app.processEvents();ventana.findChild<QTimer *>()->stop();
+    MainWindow ventana;ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);app.processEvents();ventana.findChild<QTimer *>()->stop();
     auto *nivel=ventana.findChild<Nivel *>();auto *vista=ventana.findChild<QGraphicsView *>();
     for (auto *g:nivel->obtenerGuardias())g->setPos(3000,3000);
     for (QPointF lugar:{QPointF(90,680),QPointF(1280,95)}) {

@@ -1,6 +1,7 @@
 #ifndef HACIENDA_H
 #define HACIENDA_H
 #include <QGraphicsScene>
+#include "dificultad.h"
 #include <QPixmap>
 #include <vector>
 #include <array>
@@ -21,6 +22,8 @@ public:
     bool estaEnLiana() const;
     const array<Liana *,2> &obtenerLianas() const;
     void reiniciar();
+    void establecerDificultad(Dificultad nueva);
+    Dificultad dificultadActual() const { return dificultad; }
     QString informacionActual() const;
     Jugador *obtenerJugador() const;
     const vector<Plataforma *> &obtenerPlataformas() const;
@@ -36,6 +39,7 @@ signals:
 protected:
     void drawBackground(QPainter *, const QRectF &) override;
 private:
+    Dificultad dificultad = Dificultad::Normal;
     void actualizarPaso(qreal dt);
     void perderVida();
     void reaparecer();

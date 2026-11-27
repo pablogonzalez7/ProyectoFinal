@@ -19,7 +19,7 @@ public:
     Popeye(const vector<QRectF>& superficies, const vector<QPointF>& destinos);
     QRectF boundingRect() const override;
     void actualizar(qreal segundos) override;
-    void reiniciar();
+    void reiniciar(int vidasIniciales = resistenciaMaxima);
     void percibir(const QPointF& posicionJugador);
     DecisionPopeye razonar();
     void actuar(const DecisionPopeye& decision);

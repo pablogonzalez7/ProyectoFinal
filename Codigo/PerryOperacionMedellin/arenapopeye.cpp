@@ -65,10 +65,11 @@ ArenaPopeye::ArenaPopeye(QObject* padre)
     miraVertical->setZValue(20);
     aviso = addSimpleText("ATAQUE OSCILATORIO: cambia de plataforma", QFont("Arial", 13, QFont::Bold));
     aviso->setBrush(QColor("#7d174d"));
-    aviso->setPos(220, 30);
+    aviso->setPos(220, 76);
     aviso->setZValue(20);
     reiniciar();
 }
+void ArenaPopeye::establecerDificultad(Dificultad nueva) { dificultad = nueva; }
 void ArenaPopeye::reiniciar()
 {
     estado = EnJuego;
@@ -94,7 +95,7 @@ void ArenaPopeye::reiniciar()
     jugador->setPos(70, 416);
     jugador->aterrizar(460);
     jugador->setOpacity(1);
-    popeye->reiniciar();
+    popeye->reiniciar(dificultad == Dificultad::Facil ? corazones : Popeye::resistenciaMaxima);
     escudo->hide();
     aviso->hide();
     for (auto* b : balasEnemigas)
@@ -341,12 +342,14 @@ void ArenaPopeye::actualizarProyectiles(qreal dt)
             recibirImpacto();
             continue;
         }
-        for (auto* piso : pisos)
-            if (bala->collidesWithItem(piso))
-            {
-                terminarProyectil(bala, Fallo);
-                break;
-            }
+        // En dificil atraviesan el escenario. Perry y su escudo siguen recibiendo impactos.
+        if (dificultad != Dificultad::Dificil)
+            for (auto* piso : pisos)
+                if (bala->collidesWithItem(piso))
+                {
+                    terminarProyectil(bala, Fallo);
+                    break;
+                }
         if (bala->edadActual() > 5 || !sceneRect().intersects(bala->sceneBoundingRect()))
             terminarProyectil(bala, Fallo);
     }
@@ -461,13 +464,9 @@ QString ArenaPopeye::informacionActual() const
         : tiempoFatiga > 0                 ? QString("FATIGA %1 s").arg(qCeil(tiempoFatiga))
         : recargaAgilidad > 0              ? QString::number(qCeil(recargaAgilidad)) + " s"
                                            : "LISTA (Q)";
-    return QString("Corazones: %1/5 | Popeye: %2/%5 | Escudo: %3 | Agilidad: %4\nApunta y haz clic (1 "
+    return QString("Escudo: %1 | Agilidad: %2\nApunta y haz clic (1 "
                    "disparo/s). Enter: puno en suelo, patada en aire. Anticipa sus saltos.")
-        .arg(corazones)
-        .arg(popeye->resistenciaActual())
-        .arg(esc)
-        .arg(agi)
-        .arg(Popeye::resistenciaMaxima);
+        .arg(esc).arg(agi);
 }
 void ArenaPopeye::publicarInformacion()
 {

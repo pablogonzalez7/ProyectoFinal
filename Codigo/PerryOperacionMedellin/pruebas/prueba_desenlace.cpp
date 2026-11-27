@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "desenlace.h"
 #include "escobar.h"
 #include "jugador.h"
@@ -186,7 +187,7 @@ int main(int argc, char** argv)
         cout << "OK derrota unica y cien reinicios reutilizando objetos" << endl;
         // Transiciones de la ventana; los combates se prueban por separado arriba.
         MainWindow ventana;
-        ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
+        ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection);
         app.processEvents();
         ventana.findChild<QTimer*>()->stop();
         auto* nivel = ventana.findChild<Nivel*>();

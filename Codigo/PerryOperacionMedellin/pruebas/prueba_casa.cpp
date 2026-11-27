@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "configuracion.h"
 #include "jugador.h"
 #include "llave.h"
@@ -345,7 +346,7 @@ int main(int argc, char *argv[])
         });
         prueba("Teclado, foco, camara movil y capturas", [&] {
             MainWindow ventana;
-            ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection); aplicacion.processEvents();
+            ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection); aplicacion.processEvents();
             auto *nivel=ventana.findChild<Nivel *>();
             auto *vista=ventana.findChild<QGraphicsView *>();
             auto *reloj=ventana.findChild<QTimer *>();

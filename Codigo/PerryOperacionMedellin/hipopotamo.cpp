@@ -8,7 +8,7 @@
 using namespace std;
 using namespace ConfiguracionHacienda;
 Hipopotamo::Hipopotamo(qreal x, qreal y, qreal desfase)
-    : Plataforma(x, y, 140, 100), fase(desfase) { cargarSprites(); }
+    : Plataforma(x, y, 140, 100), fase(desfase), desfaseInicial(desfase) { cargarSprites(); }
 bool Hipopotamo::permiteApoyo() const { return fase < inicioInmersion; }
 bool Hipopotamo::estaAvisando() const { return fase >= inicioAviso && fase < inicioInmersion; }
 qreal Hipopotamo::faseActual() const { return fase; }
@@ -16,8 +16,13 @@ void Hipopotamo::reiniciar()
 {
     // Cada hipopotamo empieza en un momento distinto del mismo ciclo.
     // El aviso sigue durando un segundo y no cambian dibujo ni colisiones.
-    fase = QRandomGenerator::global()->generateDouble() * periodoHipopotamo;
+    fase = cicloAleatorio ? QRandomGenerator::global()->generateDouble() * periodoHipopotamo : desfaseInicial;
     update();
+}
+void Hipopotamo::configurarCiclo(bool aleatorio, qreal desfase)
+{
+    cicloAleatorio = aleatorio;
+    desfaseInicial = desfase;
 }
 void Hipopotamo::actualizar(qreal dt)
 {

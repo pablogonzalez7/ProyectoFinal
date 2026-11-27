@@ -12,6 +12,7 @@ public:
     bool permiteApoyo() const override;
     void actualizar(qreal segundos) override;
     void reiniciar() override;
+    void configurarCiclo(bool aleatorio, qreal desfase);
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override;
     bool estaAvisando() const;
     qreal faseActual() const;
@@ -19,6 +20,8 @@ private:
     array<QPixmap, 4> sprites;
     void cargarSprites();
     qreal fase;
+    qreal desfaseInicial = 0;
+    bool cicloAleatorio = true;
 
 };
 #endif

@@ -1,6 +1,7 @@
 #ifndef ARENAPOPEYE_H
 #define ARENAPOPEYE_H
 #include <QGraphicsScene>
+#include "dificultad.h"
 #include <QPixmap>
 #include <array>
 #include <vector>
@@ -27,6 +28,8 @@ public:
     explicit ArenaPopeye(QObject* padre = nullptr);
     void actualizar(qreal segundos);
     void reiniciar();
+    void establecerDificultad(Dificultad nueva);
+    Dificultad dificultadActual() const { return dificultad; }
     void establecerDireccion(int horizontal);
     void saltar();
     void golpear();
@@ -88,6 +91,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent*) override;
 
 private:
+    Dificultad dificultad = Dificultad::Normal;
     void actualizarPaso(qreal segundos);
     void actualizarHabilidades(qreal segundos);
     void actualizarJugador(qreal segundos);

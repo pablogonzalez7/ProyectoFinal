@@ -46,6 +46,15 @@ Hacienda::Hacienda(QObject *padre) : QGraphicsScene(padre), jugador(new Jugador(
     reiniciar();
 }
 
+void Hacienda::establecerDificultad(Dificultad nueva)
+{
+    dificultad = nueva;
+    const qreal fases[] = {0, 7.7, 6.9, 0.4, 8.1, 7.3, 0.8, 0};
+    int indice = 0;
+    for (auto *p : plataformas)
+        if (auto *hip = dynamic_cast<Hipopotamo *>(p))
+            hip->configurarCiclo(nueva != Dificultad::Facil, fases[indice++]);
+}
 void Hacienda::reiniciar()
 {
     vidas = vidasIniciales;
@@ -210,17 +219,17 @@ void Hacienda::perderVida()
 QString Hacienda::informacionActual() const
 {
     if (estado == Completado)
-        return "Lianas superadas! Llegaste a la entrada vigilada.\nPreparando el encuentro con los dos escoltas...";
+        return "Lianas superadas! Llegaste a la entrada vigilada.\nPreparando el encuentro con los escoltas...";
     if (estado == Recuperando)
-        return vidas ? QString("Caiste al agua. Vidas: %1/3\nVolveras a la ultima orilla segura.").arg(vidas)
+        return vidas ? QString("Caiste al agua.\nVolveras a la ultima orilla segura.")
                      : "Sin vidas. Reiniciando desde la entrada de la hacienda...";
     const QString consejo = lianaActual
         ? "ESPACIO: sueltate cuando avances hacia la siguiente orilla. Conservas la velocidad del balanceo."
         : jugador->x() >= 2780
           ? "Manten E y salta hacia el extremo de la liana. ESPACIO: soltarte. A/D no cambia el vuelo tras soltarte."
           : "Salta sobre los hipopotamos. Amarillo (!): van a sumergirse; espera en las orillas.";
-    return QString("Hacienda | Vidas: %1/3 | Avance: %2% | %3\n%4")
-        .arg(vidas).arg(qBound(0,int(100*(jugador->x()-100)/4100),100))
+    return QString("Hacienda | Avance: %1% | %2\n%3")
+        .arg(qBound(0,int(100*(jugador->x()-100)/4100),100))
         .arg(jugador->x() >= 2780 ? "Lianas" : "Rio").arg(consejo);
 }
 void Hacienda::publicarInformacion()

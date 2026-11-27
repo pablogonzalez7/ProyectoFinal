@@ -2,6 +2,7 @@
 #define JUGADOR_H
 
 #include "personaje.h"
+#include "dificultad.h"
 
 #include <QPixmap>
 #include <QPointF>
@@ -35,6 +36,7 @@ public:
     bool estaEnSuelo() const;
     qreal velocidadVerticalActual() const;
 
+    void establecerDificultad(Dificultad nueva);
     void alternarCamuflaje();
     void actualizarCamuflaje(qreal segundosReales);
     qreal segundosCamuflaje() const;
@@ -84,7 +86,7 @@ private:
     // Los 16 fotogramas se preparan una vez y se reutilizan al dibujar.
     array<array<QPixmap, cantidadFotogramas>, cantidadDirecciones> fotogramas;
     array<QPixmap, cantidadDirecciones> aparienciasCamufladas;
-    static constexpr int maximoCamuflajes = 2;
+    int maximoCamuflajes = 2;
     int usosCamuflaje = maximoCamuflajes;
     bool camuflado = false;
     qreal tiempoCamuflaje = 0.0;

@@ -1,3 +1,4 @@
+#include "introduccion.h"
 #include "hacienda.h"
 #include "liana.h"
 #include "jugador.h"
@@ -181,7 +182,7 @@ int main(int argc,char **argv) {
   exigir(h.items().size()==cuenta,"Crea objetos al reiniciar");
   cout<<"OK recorrido completo real y reutilizacion en cien reinicios"<<endl;
   // Integracion real: recoger llaves, recorrer carretera, Enter y controles de liana.
-  MainWindow ventana; ventana.show(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection); app.processEvents(); ventana.findChild<QTimer *>()->stop();
+  MainWindow ventana; ventana.show(); ventana.findChild<Introduccion *>()->terminar(); QMetaObject::invokeMethod(&ventana, "elegirModo", Qt::DirectConnection); app.processEvents(); ventana.findChild<QTimer *>()->stop();
   auto *n=ventana.findChild<Nivel *>(); auto *vista=ventana.findChild<QGraphicsView *>();
   for(auto *g:n->obtenerGuardias()) g->setPos(3000,3000);
   for(QPointF posicion:{QPointF(90,680),QPointF(1280,95)}) {
